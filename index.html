@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ludopoiesis — Tecnología · Preventa</title>
+<meta name="description" content="Preventa del naipe de Tecnología, el tercer naipe de Ludopoiesis. 69 cartas ilustradas, un texto único en cada una. Primera edición.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;1,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #FAFAF8;
+    --ink:         #1A1A1A;
+    --ink-soft:    #555555;
+    --ink-mute:    #999999;
+    --hairline:    #EAEAE6;
+    --primary:     #3C0F3C;
+    --accent:      #A6D656;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 480px; margin: 0 auto; padding: 0 22px; }
+
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .app-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--hairline);
+    text-align: center;
+  }
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 20px;
+    letter-spacing: -0.3px;
+  }
+  .logo b { font-weight: 500; color: var(--accent); }
+
+  /* ---------- HERO ---------- */
+  .hero { padding: 48px 0 40px; border-bottom: 1px solid var(--hairline); }
+  .hero .wrap { text-align: center; }
+
+  .card-frame {
+    width: min(240px, calc(85vw - 32px));
+    aspect-ratio: 280 / 428;
+    margin: 0 auto 28px;
+    background: #fff;
+    border-radius: 6px;
+    border-top: 3px solid var(--accent);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 16px 48px -12px color-mix(in srgb, var(--accent) 24%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .card-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-frame .placeholder {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--ink-mute);
+    text-align: center;
+    padding: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .hero .eyebrow { display: block; margin-bottom: 16px; }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 30px;
+    line-height: 1.18;
+    letter-spacing: -0.4px;
+    max-width: 20ch;
+    margin: 0 auto 16px;
+    color: var(--primary);
+  }
+
+  .hero p.sub {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 34ch;
+    margin: 0 auto 22px;
+  }
+
+  .jump {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--ink-mute);
+    text-decoration: none;
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 2px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .jump:hover { color: var(--primary); border-color: var(--accent); }
+
+  /* ---------- SECTIONS ---------- */
+  section { padding: 40px 0; border-bottom: 1px solid var(--hairline); }
+  section > .wrap > .eyebrow { display: block; margin-bottom: 22px; }
+
+  .prose {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.6;
+    letter-spacing: -0.1px;
+    color: var(--ink);
+  }
+  .prose p + p { margin-top: 14px; }
+  .prose em { font-style: italic; color: var(--primary); }
+
+  /* ---------- PERSPECTIVAS ---------- */
+  .perspectivas { list-style: none; }
+  .persp {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .perspectivas .persp:last-child { border-bottom: none; }
+  .persp .em { font-size: 18px; line-height: 1; flex-shrink: 0; width: 22px; text-align: center; }
+  .persp .name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    width: 92px;
+    flex-shrink: 0;
+  }
+  .persp .desc {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .persp.active .name { color: var(--primary); }
+  .persp.active {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    margin: 0 -14px;
+    padding: 14px;
+    border-radius: 6px;
+    border-bottom: none;
+  }
+  .persp .tag {
+    display: inline-block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--primary);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  /* ---------- USOS ---------- */
+  .usos { list-style: none; }
+  .usos li {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .usos li:last-child { border-bottom: none; }
+  .usos li b {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  /* ---------- PRICING ---------- */
+  .tiers { display: flex; flex-direction: column; }
+  .tier {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .tier:last-child { border-bottom: none; }
+  .tier .label { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; }
+  .tier .label .qty {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-mute);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .tier .price {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+  .avail {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+    text-align: center;
+  }
+  .avail .count {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .avail .count b { color: var(--primary); font-weight: 500; }
+  .avail .edicion {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .avail .updated { font-size: 11px; color: var(--ink-mute); font-family: 'DM Sans', sans-serif; margin-top: 8px; }
+
+  /* ---------- GIFT ---------- */
+  .gift-note {
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-top: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 24px 22px;
+    margin-top: 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .gift-note .deadline {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    color: var(--primary);
+  }
+
+  /* ---------- RESERVE ---------- */
+  .reserve-box {
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-top: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 26px 24px;
+  }
+  .reserve-box p { font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); margin-bottom: 16px; }
+  .reserve-box p.fine { font-size: 13px; color: var(--ink-soft); }
+  .nequi-row {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--bg);
+    border: 1px dashed var(--hairline);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin: 18px 0 22px;
+  }
+  .nequi-row .k { color: var(--ink-mute); margin-right: 8px; }
+
+  .cta {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 16px 20px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.25s ease;
+  }
+  .cta:hover { background: var(--primary); }
+  .cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .alt-contact {
+    margin-top: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .alt-contact a { color: var(--primary); text-decoration: none; border-bottom: 1px solid var(--hairline); }
+  .whisper {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .whisper a { color: var(--primary); font-style: normal; text-decoration: none; border-bottom: 1px solid var(--accent); }
+
+  /* ---------- TESTIMONIOS ---------- */
+  #testimonios { display: none; }
+  .quote { padding: 18px 0; border-bottom: 1px solid var(--hairline); }
+  .quote:last-child { border-bottom: none; }
+  .quote p {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .quote .by {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--ink-mute);
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ---------- AUTHOR ---------- */
+  .author-text {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .author-text b { font-weight: 500; color: var(--primary); }
+
+  /* ---------- FAQ ---------- */
+  .faq details { border-bottom: 1px solid var(--hairline); }
+  .faq summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 16px 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+";
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .faq details[open] summary::after { content: "\2013"; }
+  .faq .answer {
+    padding: 0 0 18px;
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .closing {
+    text-align: center;
+    padding: 36px 22px 0;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 15px;
+    color: var(--ink-mute);
+  }
+
+  footer {
+    padding: 26px 0 48px;
+    text-align: center;
+    color: var(--ink-mute);
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.3px;
+  }
+  footer .wrap { line-height: 1.8; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body data-naipe="tecnologia">
+
+  <div class="app-header">
+    <div class="logo">ludo<b>poiesis</b></div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="wrap">
+      <div class="card-frame">
+        <!-- Reemplazar por <img src="foto-carta.jpg" alt="Carta del naipe Tecnologia"> -->
+        <div class="placeholder">[ foto de una carta<br>del naipe ac&aacute; ]</div>
+      </div>
+      <span class="eyebrow">Ludopoiesis &mdash; Tecnolog&iacute;a</span>
+      <h1>Un or&aacute;culo para jugar la vida.</h1>
+      <p class="sub">El naipe de Tecnolog&iacute;a, tercer naipe de Ludopoiesis. En preventa antes de su primera edici&oacute;n.</p>
+      <a class="jump" href="#reservar">&iquest;Ya lo conoces? Reserva directo &rarr;</a>
+    </div>
+  </div>
+
+  <!-- DE QU&Eacute; SE TRATA -->
+  <section class="about">
+    <div class="wrap">
+      <span class="eyebrow">De qu&eacute; se trata</span>
+      <div class="prose">
+        <p>Ludopoiesis es el proceso de crear a trav&eacute;s del juego. Un juego po&eacute;tico.</p>
+        <p>La vida tiene reglas. En vez de jugar dentro de ellas, aprendes a jugar <em>con</em> ellas &mdash; un juego infinito hecho de infinitos juegos finitos.</p>
+        <p>La calidad de tu vida es la calidad de tus preguntas. No se trata de encontrar respuestas, sino de seguir en movimiento: cuestionando, asombr&aacute;ndote, creando.</p>
+        <p>Cada carta es un lente. Un texto ilustrado que te cambia la pregunta que te est&aacute;s haciendo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAS CUATRO PERSPECTIVAS -->
+  <section class="perspectivas-sec">
+    <div class="wrap">
+      <span class="eyebrow">Cuatro perspectivas</span>
+      <ul class="perspectivas">
+        <li class="persp">
+          <span class="em">&#127793;</span>
+          <span class="name">Naturaleza</span>
+          <span class="desc">Las leyes, los ciclos, los seres.</span>
+        </li>
+        <li class="persp">
+          <span class="em">&#128167;</span>
+          <span class="name">Fluir</span>
+          <span class="desc">El movimiento, los aprendizajes, la adaptaci&oacute;n.</span>
+        </li>
+        <li class="persp active">
+          <span class="em">&#129504;</span>
+          <span class="name">Tecnolog&iacute;a<span class="tag">en preventa</span></span>
+          <span class="desc">Las herramientas, los procesos, lo que dise&ntilde;as y usas.</span>
+        </li>
+        <li class="persp">
+          <span class="em">&#10024;</span>
+          <span class="name">Abundancia</span>
+          <span class="desc">La actitud, el enfoque, los juicios.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- C&Oacute;MO SE USA -->
+  <section class="uso">
+    <div class="wrap">
+      <span class="eyebrow">C&oacute;mo se usa</span>
+      <ul class="usos">
+        <li><b>Por diversi&oacute;n</b>Simplemente saca una carta y l&eacute;ela. Es un mensaje que te acompa&ntilde;ar&aacute; durante el d&iacute;a y te ayudar&aacute; a ver distinto.</li>
+        <li><b>Para pensar un problema</b>Haz una pregunta y saca una o varias cartas. Te ayudar&aacute;n a abordarlo con otra cara.</li>
+        <li><b>Entre varios</b>Lee una carta en grupo. Es una gran opci&oacute;n para romper el hielo o tener conversaciones profundas.</li>
+        <li><b>Con tu equipo</b>Una gran forma de arrancar o destrabar una reuni&oacute;n. Tambi&eacute;n para pensar soluciones a tus problemas.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- AC&Aacute; VA, M&Aacute;S ADELANTE, EL LANZADOR DE CARTA / EMBED DE LA APP.
+       La versi&oacute;n virtual ya existe en la app. Se integra despu&eacute;s. -->
+
+  <!-- PRECIOS + DISPONIBILIDAD -->
+  <section class="pricing" id="precios">
+    <div class="wrap">
+      <span class="eyebrow">Precios de preventa</span>
+      <div class="tiers">
+        <div class="tier">
+          <div class="label">1 naipe<span class="qty">precio de lista</span></div>
+          <div class="price">$79.000</div>
+        </div>
+        <div class="tier">
+          <div class="label">1 naipe<span class="qty">preventa</span></div>
+          <div class="price">$69.000</div>
+        </div>
+        <div class="tier">
+          <div class="label">5 naipes<span class="qty">$59.000 cada uno</span></div>
+          <div class="price">$295.000</div>
+        </div>
+        <div class="tier">
+          <div class="label">10 naipes<span class="qty">$49.000 cada uno</span></div>
+          <div class="price">$490.000</div>
+        </div>
+        <div class="tier">
+          <div class="label">50 naipes<span class="qty">$39.000 cada uno</span></div>
+          <div class="price">$1.950.000</div>
+        </div>
+      </div>
+      <div class="avail">
+        <div class="count">Edici&oacute;n de 500. Quedan <b id="restantes">230</b>.</div>
+        <div class="edicion">Naturaleza y Fluir ya van por su segunda edici&oacute;n. Esta es la primera de Tecnolog&iacute;a.</div>
+        <div class="updated" id="stock-updated"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARA REGALAR -->
+  <section class="gift">
+    <div class="wrap">
+      <span class="eyebrow">Para regalar</span>
+      <div class="prose">
+        <p>Ludopoiesis es un gran regalo para tus clientes o amigos. Algo especial, que no se consume: se vuelve a abrir.</p>
+        <p>Cinco, diez o cincuenta naipes para tu gente o tu equipo &mdash; el precio baja con la cantidad.</p>
+      </div>
+      <div class="gift-note">
+        Puedes sumar una tarjeta de dedicatoria dentro de cada caja, escrita por ti.<br><br>
+        <span class="deadline">Para navidad: reserva antes del [FECHA] y llega a tiempo.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- C&Oacute;MO RESERVAR -->
+  <section class="reserve" id="reservar">
+    <div class="wrap">
+      <span class="eyebrow">C&oacute;mo reservar</span>
+      <div class="reserve-box">
+        <p>Escr&iacute;beme cu&aacute;ntos naipes quieres y te paso los datos exactos. Pago por Nequi o cripto; para otras opciones, escr&iacute;beme.</p>
+        <p class="fine">Los env&iacute;os corren por tu cuenta. Cuando est&eacute; impreso, coordino el env&iacute;o y te paso el costo.</p>
+        <div class="nequi-row"><span class="k">Nequi:</span>TU_NUMERO_NEQUI</div>
+        <a class="cta" href="https://wa.me/TUNUMERO" target="_blank" rel="noopener">Escr&iacute;beme por WhatsApp para reservar</a>
+        <div class="alt-contact">o por correo a <a href="mailto:hola@ludopoiesis.com">hola@ludopoiesis.com</a></div>
+        <div class="whisper">&iquest;Lo quieres en ingl&eacute;s? Hay una edici&oacute;n limitada. <a href="https://wa.me/TUNUMERO" target="_blank" rel="noopener">Escr&iacute;beme.</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIOS (se llena solo; oculto si est&aacute; vac&iacute;o) -->
+  <section id="testimonios">
+    <div class="wrap">
+      <span class="eyebrow">Lo que dicen</span>
+      <div id="testimonios-list"></div>
+    </div>
+  </section>
+
+  <!-- AUTOR -->
+  <section class="author">
+    <div class="wrap">
+      <span class="eyebrow">Qui&eacute;n lo hizo</span>
+      <p class="author-text"><b>Juan Pablo Calder&oacute;n.</b> F&iacute;sico, poeta, artista, apicultor. Ludopoiesis naci&oacute; de obligarse a publicar, a entregar, a perder el miedo y jugar.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <div class="wrap">
+      <span class="eyebrow">Preguntas</span>
+      <details>
+        <summary>&iquest;Cu&aacute;ndo se imprime?</summary>
+        <div class="answer">Cuando la preventa cubre la tirada. Por eso es preventa: tu reserva es lo que lo hace existir.</div>
+      </details>
+      <details>
+        <summary>&iquest;Cu&aacute;ndo me llega?</summary>
+        <div class="answer">Antes de navidad. La fecha exacta la confirmo con la imprenta y la actualizo ac&aacute;.</div>
+      </details>
+      <details>
+        <summary>&iquest;C&oacute;mo son los env&iacute;os?</summary>
+        <div class="answer">Por cuenta de quien compra. Una vez impreso coordino el env&iacute;o y te paso el costo antes de despachar.</div>
+      </details>
+      <details>
+        <summary>&iquest;Env&iacute;as fuera de Colombia?</summary>
+        <div class="answer">Escr&iacute;beme y lo conversamos.</div>
+      </details>
+      <details>
+        <summary>&iquest;Hay versi&oacute;n en ingl&eacute;s?</summary>
+        <div class="answer">Una edici&oacute;n limitada, s&iacute;. Escr&iacute;beme y te cuento.</div>
+      </details>
+      <details>
+        <summary>&iquest;Hay otros naipes?</summary>
+        <div class="answer">Naturaleza y Fluir, ya impresos. Abundancia viene en camino. Ludopoiesis es un juego de cuatro.</div>
+      </details>
+      <details>
+        <summary>&iquest;C&oacute;mo pago?</summary>
+        <div class="answer">Nequi o cripto. Para otras opciones, escr&iacute;beme.</div>
+      </details>
+    </div>
+  </section>
+
+  <div class="closing">Dise&ntilde;ado con amor para los amigos.</div>
+
+  <footer>
+    <div class="wrap">
+      Poeta: Juan Pablo Calder&oacute;n &middot; Ilustradora: Adriana Santamar&iacute;a &middot; Editora: &Eacute;rica Casado<br>
+      ludopoiesis.app
+    </div>
+  </footer>
+
+  <script>
+    /* =========================================================
+       DISPONIBILIDAD - cambia unidadesRestantes a mano tras cada venta
+       ========================================================= */
+    const unidadesRestantes = 230;
+    const fechaActualizacion = "2026-07-15";
+
+    document.getElementById('restantes').textContent = unidadesRestantes;
+    document.getElementById('stock-updated').textContent = `actualizado ${fechaActualizacion}`;
+
+    /* =========================================================
+       TESTIMONIOS - agrega entradas ac&aacute; y aparecen solas.
+       Si el array queda vac&iacute;o, la secci&oacute;n no se muestra.
+       ========================================================= */
+    const testimonios = [
+      // { texto: "Lo saco cada ma&ntilde;ana antes del caf&eacute;.", autor: "Nombre, ciudad" },
+    ];
+
+    if (testimonios.length) {
+      document.getElementById('testimonios').style.display = 'block';
+      document.getElementById('testimonios-list').innerHTML = testimonios.map(t => `
+        <div class="quote"><p>${t.texto}</p><div class="by">&mdash; ${t.autor}</div></div>
+      `).join('');
+    }
+  </script>
+
+</body>
+</html>
