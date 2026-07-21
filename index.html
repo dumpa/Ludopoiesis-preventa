@@ -4,10 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ludopoiesis — Tecnología · Preventa</title>
-<meta name="description" content="Preventa del naipe de Tecnología, el tercer naipe de Ludopoiesis. 69 cartas ilustradas, un texto único en cada una. Primera edición.">
+<meta name="description" content="Preventa del naipe de Tecnología, el tercer naipe de Ludopoiesis. 69 cartas ilustradas, un texto único en cada una. Saca una carta y jugá.">
+<meta property="og:title" content="Ludopoiesis — Tecnología · Preventa">
+<meta property="og:description" content="Un oráculo para jugar la vida. 69 cartas. Preventa de la primera edición.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;1,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://ludopoiesis.app" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg:          #FAFAF8;
@@ -17,6 +21,8 @@
     --hairline:    #EAEAE6;
     --primary:     #3C0F3C;
     --accent:      #A6D656;
+    --card-w:      min(268px, 76vw);
+    --flip-ms:     720ms;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,6 +35,7 @@
     font-size: 16px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
 
   .wrap { max-width: 480px; margin: 0 auto; padding: 0 22px; }
@@ -55,363 +62,377 @@
   }
   .logo b { font-weight: 500; color: var(--accent); }
 
-  /* ---------- HERO ---------- */
-  .hero { padding: 48px 0 40px; border-bottom: 1px solid var(--hairline); }
+  /* ================= HERO / ORÁCULO ================= */
+  .hero { padding: 40px 0 44px; border-bottom: 1px solid var(--hairline); }
   .hero .wrap { text-align: center; }
-
-  .card-frame {
-    width: min(240px, calc(85vw - 32px));
-    aspect-ratio: 280 / 428;
-    margin: 0 auto 28px;
-    background: #fff;
-    border-radius: 6px;
-    border-top: 3px solid var(--accent);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 16px 48px -12px color-mix(in srgb, var(--accent) 24%, transparent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  .card-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .card-frame .placeholder {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    color: var(--ink-mute);
-    text-align: center;
-    padding: 12px;
-    letter-spacing: 0.5px;
-  }
-
-  .hero .eyebrow { display: block; margin-bottom: 16px; }
+  .hero .eyebrow { display: block; margin-bottom: 14px; }
 
   .hero h1 {
     font-family: 'Fraunces', serif;
     font-weight: 300;
     font-size: 30px;
-    line-height: 1.18;
-    letter-spacing: -0.4px;
-    max-width: 20ch;
-    margin: 0 auto 16px;
+    line-height: 1.16;
+    letter-spacing: -0.5px;
+    max-width: 18ch;
+    margin: 0 auto 12px;
     color: var(--primary);
   }
-
   .hero p.sub {
     font-family: 'Fraunces', serif;
     font-style: italic;
     font-weight: 300;
     font-size: 15px;
     color: var(--ink-soft);
-    max-width: 34ch;
-    margin: 0 auto 22px;
+    max-width: 32ch;
+    margin: 0 auto 30px;
   }
 
+  /* --- card stage --- */
+  .stage {
+    position: relative;
+    width: var(--card-w);
+    aspect-ratio: 981 / 1453;
+    margin: 0 auto 22px;
+    perspective: 1600px;
+  }
+  /* stacked deck illusion */
+  .stage::before, .stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid var(--hairline);
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .stage::before, .stage::after { z-index: 0; }
+  .stage::before { transform: translate(9px, 11px) rotate(2.4deg); }
+  .stage::after  { transform: translate(-7px, 7px) rotate(-2deg); }
+  .stage.drawn::before { transform: translate(6px, 8px) rotate(1.6deg); opacity:.6; }
+  .stage.drawn::after  { transform: translate(-5px, 5px) rotate(-1.4deg); opacity:.6; }
+  .stage::before, .stage::after { transition: transform .5s ease, opacity .5s ease; }
+
+  .flip {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transition: transform var(--flip-ms) cubic-bezier(.2,.75,.2,1);
+    cursor: default;
+    z-index: 2;
+  }
+  .stage.drawn .flip { cursor: pointer; }
+  .flip.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-top: 3px solid var(--accent);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 22px 50px -18px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .face.illus { display: flex; align-items: center; justify-content: center; }
+  .face.illus img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity .45s ease; }
+  .face.illus img.ready { opacity: 1; }
+  .face.illus .shimmer {
+    position: absolute; inset: 0;
+    background: linear-gradient(100deg, #f3f3ef 30%, #fbfbf9 50%, #f3f3ef 70%);
+    background-size: 220% 100%;
+    animation: sh 1.4s linear infinite;
+  }
+  .face.illus img.ready + .shimmer { display: none; }
+  @keyframes sh { from { background-position: 180% 0; } to { background-position: -80% 0; } }
+
+  .face.text {
+    transform: rotateY(180deg);
+    display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: flex-start;
+    padding: 30px 26px 26px;
+    text-align: left;
+    background: #fff;
+    border-top-color: var(--accent);
+  }
+  .face.text h3 {
+    font-family: 'Fraunces', serif; font-weight: 300;
+    font-size: 24px; letter-spacing: -0.5px; line-height: 1.05;
+    margin: 0 0 18px; color: var(--primary);
+  }
+  .face.text p {
+    font-family: 'DM Sans', sans-serif; font-weight: 400;
+    font-size: 13px; line-height: 1.65;
+    color: var(--ink-soft); margin: 0;
+    white-space: pre-line; flex: 1;
+    overflow-y: auto; max-height: 100%;
+  }
+
+  /* face-down cover — the deck back */
+  .cover {
+    position: absolute; inset: 0;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-top: 3px solid var(--accent);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 22px 50px -18px color-mix(in srgb, var(--accent) 30%, transparent);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px;
+    cursor: pointer;
+    transition: transform var(--flip-ms) cubic-bezier(.2,.75,.2,1), opacity var(--flip-ms) ease;
+    backface-visibility: hidden;
+    z-index: 3;
+  }
+  .stage.drawn .cover { transform: rotateY(180deg); opacity: 0; pointer-events: none; }
+  .cover .lens {
+    width: 74px; height: 74px; border-radius: 50%;
+    border: 1px solid var(--hairline);
+    display: grid; place-items: center;
+    background:
+      radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 62%),
+      repeating-linear-gradient(0deg, var(--hairline) 0 1px, transparent 1px 11px),
+      repeating-linear-gradient(90deg, var(--hairline) 0 1px, transparent 1px 11px);
+  }
+  .cover .lens span { font-size: 26px; filter: grayscale(.15); }
+  .cover .wm { font-family: 'Fraunces', serif; font-weight: 300; font-size: 15px; color: var(--ink); letter-spacing: -.2px; }
+  .cover .wm b { font-weight: 500; color: var(--accent); }
+  .cover .tag { font-family:'DM Sans',sans-serif; font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color: var(--ink-mute); }
+
+  /* controls */
+  .draw-btn {
+    font-family: 'DM Sans', sans-serif; font-size: 13px; letter-spacing: 1.5px;
+    text-transform: uppercase; font-weight: 500;
+    background: var(--ink); color: var(--bg);
+    border: none; border-radius: 999px; padding: 14px 30px; cursor: pointer;
+    transition: background .25s ease, transform .1s ease;
+  }
+  .draw-btn:hover { background: var(--primary); }
+  .draw-btn:active { transform: translateY(1px); }
+  .draw-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .oracle-hint {
+    min-height: 20px; margin-top: 14px;
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+    font-size: 14px; color: var(--ink-mute);
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .oracle-hint.show { opacity: 1; }
+  .oracle-hint a { color: var(--primary); font-style: normal; border-bottom: 1px solid var(--accent); text-decoration: none; }
+
   .jump {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    color: var(--ink-mute);
-    text-decoration: none;
-    border-bottom: 1px solid var(--hairline);
-    padding-bottom: 2px;
-    transition: color 0.2s ease, border-color 0.2s ease;
+    display: inline-block; margin-top: 26px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: .5px;
+    color: var(--ink-mute); text-decoration: none;
+    border-bottom: 1px solid var(--hairline); padding-bottom: 2px;
+    transition: color .2s ease, border-color .2s ease;
   }
   .jump:hover { color: var(--primary); border-color: var(--accent); }
 
-  /* ---------- SECTIONS ---------- */
+  /* ================= SECTIONS ================= */
   section { padding: 40px 0; border-bottom: 1px solid var(--hairline); }
   section > .wrap > .eyebrow { display: block; margin-bottom: 22px; }
 
   .prose {
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 17px;
-    line-height: 1.6;
-    letter-spacing: -0.1px;
-    color: var(--ink);
+    font-family: 'Fraunces', serif; font-weight: 300;
+    font-size: 17px; line-height: 1.6; letter-spacing: -.1px; color: var(--ink);
   }
   .prose p + p { margin-top: 14px; }
   .prose em { font-style: italic; color: var(--primary); }
 
-  /* ---------- PERSPECTIVAS ---------- */
+  /* perspectivas */
   .perspectivas { list-style: none; }
-  .persp {
-    display: flex;
-    gap: 14px;
-    align-items: baseline;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--hairline);
-  }
+  .persp { display: flex; gap: 14px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--hairline); }
   .perspectivas .persp:last-child { border-bottom: none; }
   .persp .em { font-size: 18px; line-height: 1; flex-shrink: 0; width: 22px; text-align: center; }
-  .persp .name {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    width: 92px;
-    flex-shrink: 0;
-  }
-  .persp .desc {
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 15px;
-    color: var(--ink-soft);
-    line-height: 1.4;
-  }
+  .persp .name { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; width:96px; flex-shrink:0; }
+  .persp .desc { font-family:'Fraunces',serif; font-weight:300; font-size:15px; color:var(--ink-soft); line-height:1.4; }
   .persp.active .name { color: var(--primary); }
-  .persp.active {
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    margin: 0 -14px;
-    padding: 14px;
-    border-radius: 6px;
-    border-bottom: none;
-  }
-  .persp .tag {
-    display: inline-block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--primary);
-    font-weight: 500;
-    margin-top: 4px;
-  }
+  .persp.active { background: color-mix(in srgb, var(--accent) 12%, transparent); margin: 0 -14px; padding: 14px; border-radius: 6px; border-bottom: none; }
+  .persp .tagp { display:inline-block; font-family:'DM Sans',sans-serif; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--primary); font-weight:500; margin-top:4px; }
 
-  /* ---------- USOS ---------- */
+  /* usos */
   .usos { list-style: none; }
-  .usos li {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--hairline);
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 16px;
-    line-height: 1.5;
-    color: var(--ink);
-  }
+  .usos li { padding: 16px 0; border-bottom: 1px solid var(--hairline); font-family:'Fraunces',serif; font-weight:300; font-size:16px; line-height:1.5; color:var(--ink); }
   .usos li:last-child { border-bottom: none; }
-  .usos li b {
-    display: block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 6px;
-  }
+  .usos li b { display:block; font-family:'DM Sans',sans-serif; font-size:10px; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
 
-  /* ---------- PRICING ---------- */
+  /* ================= GALERÍA (fotos + video) ================= */
+  .gallery-strip {
+    display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  }
+  .gallery-strip::-webkit-scrollbar { height: 0; }
+  .shot {
+    flex: 0 0 auto; width: 62%; aspect-ratio: 4/5; scroll-snap-align: center;
+    border-radius: 8px; overflow: hidden; background: #fff;
+    border: 1px solid var(--hairline);
+    display: grid; place-items: center;
+  }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shot .ph { font-family:'DM Sans',sans-serif; font-size:11px; color:var(--ink-mute); text-align:center; padding:14px; letter-spacing:.4px; }
+  .video-slot {
+    margin-top: 16px; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 16/9; background: #000;
+    border: 1px solid var(--hairline);
+    display: grid; place-items: center;
+  }
+  .video-slot video, .video-slot iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .video-slot .ph { color: var(--ink-mute); font-family:'DM Sans',sans-serif; font-size:12px; letter-spacing:.4px; }
+  .gallery-note { margin-top: 12px; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-mute); text-align:center; }
+
+  /* ================= PRECIOS ================= */
   .tiers { display: flex; flex-direction: column; }
-  .tier {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--hairline);
-  }
+  .tier { display:flex; justify-content:space-between; align-items:baseline; padding:16px 0; border-bottom:1px solid var(--hairline); }
   .tier:last-child { border-bottom: none; }
-  .tier .label { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; }
-  .tier .label .qty {
-    display: block;
-    font-size: 11px;
-    color: var(--ink-mute);
-    font-weight: 400;
-    margin-top: 2px;
-  }
-  .tier .price {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 18px;
-    color: var(--primary);
-    white-space: nowrap;
-  }
-  .avail {
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px solid var(--hairline);
-    text-align: center;
-  }
-  .avail .count {
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 15px;
-    color: var(--ink);
-  }
-  .avail .count b { color: var(--primary); font-weight: 500; }
-  .avail .edicion {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 14px;
-    color: var(--ink-soft);
-    margin-top: 6px;
-  }
-  .avail .updated { font-size: 11px; color: var(--ink-mute); font-family: 'DM Sans', sans-serif; margin-top: 8px; }
+  .tier .label { font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; }
+  .tier .label .qty { display:block; font-size:11px; color:var(--ink-mute); font-weight:400; margin-top:2px; }
+  .tier .price { font-family:'Fraunces',serif; font-weight:500; font-size:18px; color:var(--primary); white-space:nowrap; }
 
-  /* ---------- GIFT ---------- */
-  .gift-note {
-    background: #fff;
-    border: 1px solid var(--hairline);
-    border-top: 3px solid var(--accent);
-    border-radius: 6px;
-    padding: 24px 22px;
-    margin-top: 22px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--ink-soft);
-  }
-  .gift-note .deadline {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    color: var(--primary);
-  }
+  .avail { margin-top:22px; padding-top:18px; border-top:1px solid var(--hairline); text-align:center; }
+  .stockbar { height:5px; border-radius:999px; background: var(--hairline); overflow:hidden; margin: 0 0 12px; }
+  .stockbar > i { display:block; height:100%; background: var(--accent); width:0; transition: width 1s cubic-bezier(.2,.7,.2,1); }
+  .avail .count { font-family:'Fraunces',serif; font-weight:300; font-size:15px; color:var(--ink); }
+  .avail .count b { color: var(--primary); font-weight:500; }
+  .avail .edicion { font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:14px; color:var(--ink-soft); margin-top:6px; }
+  .avail .updated { font-size:11px; color:var(--ink-mute); font-family:'DM Sans',sans-serif; margin-top:8px; }
 
-  /* ---------- RESERVE ---------- */
-  .reserve-box {
-    background: #fff;
-    border: 1px solid var(--hairline);
-    border-top: 3px solid var(--accent);
-    border-radius: 6px;
-    padding: 26px 24px;
-  }
-  .reserve-box p { font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink); margin-bottom: 16px; }
-  .reserve-box p.fine { font-size: 13px; color: var(--ink-soft); }
-  .nequi-row {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    background: var(--bg);
-    border: 1px dashed var(--hairline);
-    border-radius: 4px;
-    padding: 14px 16px;
-    margin: 18px 0 22px;
-  }
-  .nequi-row .k { color: var(--ink-mute); margin-right: 8px; }
+  /* gift */
+  .gift-note { background:#fff; border:1px solid var(--hairline); border-top:3px solid var(--accent); border-radius:6px; padding:24px 22px; margin-top:22px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink-soft); }
+  .gift-note .deadline { font-family:'Fraunces',serif; font-weight:500; color:var(--primary); }
 
-  .cta {
-    display: block;
-    width: 100%;
-    text-align: center;
-    background: var(--ink);
-    color: var(--bg);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-decoration: none;
-    font-weight: 500;
-    padding: 16px 20px;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.25s ease;
-  }
+  /* reserve */
+  .reserve-box { background:#fff; border:1px solid var(--hairline); border-top:3px solid var(--accent); border-radius:6px; padding:26px 24px; }
+  .reserve-box p { font-family:'DM Sans',sans-serif; font-size:15px; color:var(--ink); margin-bottom:16px; }
+  .reserve-box p.fine { font-size:13px; color:var(--ink-soft); }
+  .nequi-row { font-family:'DM Sans',sans-serif; font-size:14px; background:var(--bg); border:1px dashed var(--hairline); border-radius:4px; padding:14px 16px; margin:18px 0 22px; }
+  .nequi-row .k { color:var(--ink-mute); margin-right:8px; }
+  .cta { display:block; width:100%; text-align:center; background:var(--ink); color:var(--bg); font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; text-decoration:none; font-weight:500; padding:16px 20px; border-radius:999px; border:none; cursor:pointer; transition:background .25s ease; }
   .cta:hover { background: var(--primary); }
-  .cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cta:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .alt-contact { margin-top:16px; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--ink-soft); text-align:center; }
+  .alt-contact a { color:var(--primary); text-decoration:none; border-bottom:1px solid var(--hairline); }
+  .whisper { margin-top:20px; padding-top:18px; border-top:1px solid var(--hairline); font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:14px; color:var(--ink-soft); text-align:center; }
+  .whisper a { color:var(--primary); font-style:normal; text-decoration:none; border-bottom:1px solid var(--accent); }
 
-  .alt-contact {
-    margin-top: 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    color: var(--ink-soft);
-    text-align: center;
-  }
-  .alt-contact a { color: var(--primary); text-decoration: none; border-bottom: 1px solid var(--hairline); }
-  .whisper {
-    margin-top: 20px;
-    padding-top: 18px;
-    border-top: 1px solid var(--hairline);
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 14px;
-    color: var(--ink-soft);
-    text-align: center;
-  }
-  .whisper a { color: var(--primary); font-style: normal; text-decoration: none; border-bottom: 1px solid var(--accent); }
-
-  /* ---------- TESTIMONIOS ---------- */
+  /* testimonios */
   #testimonios { display: none; }
-  .quote { padding: 18px 0; border-bottom: 1px solid var(--hairline); }
+  .quote { padding:18px 0; border-bottom:1px solid var(--hairline); }
   .quote:last-child { border-bottom: none; }
-  .quote p {
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-style: italic;
-    font-size: 17px;
-    line-height: 1.5;
-    color: var(--ink);
+  .quote p { font-family:'Fraunces',serif; font-weight:300; font-style:italic; font-size:17px; line-height:1.5; color:var(--ink); }
+  .quote .by { font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-mute); margin-top:8px; letter-spacing:.3px; }
+
+  /* author */
+  .author-text { font-family:'Fraunces',serif; font-weight:300; font-size:16px; line-height:1.6; color:var(--ink); }
+  .author-text b { font-weight:500; color:var(--primary); }
+
+  /* faq */
+  .faq details { border-bottom:1px solid var(--hairline); }
+  .faq summary { list-style:none; cursor:pointer; padding:16px 0; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:500; color:var(--ink); display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .faq summary::-webkit-details-marker { display:none; }
+  .faq summary::after { content:"+"; font-family:'Fraunces',serif; font-size:20px; color:var(--accent); line-height:1; }
+  .faq details[open] summary::after { content:"\2013"; }
+  .faq .answer { padding:0 0 18px; font-family:'Fraunces',serif; font-weight:300; font-size:15px; line-height:1.55; color:var(--ink-soft); }
+
+  .closing { text-align:center; padding:36px 22px 0; font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:15px; color:var(--ink-mute); }
+  footer { padding:26px 0 96px; text-align:center; color:var(--ink-mute); font-size:11px; font-family:'DM Sans',sans-serif; letter-spacing:.3px; }
+  footer .wrap { line-height:1.8; }
+
+  /* sticky reserve pill (aparece tras sacar una carta) */
+  .sticky-reserve {
+    position: fixed; left: 50%; bottom: 18px; transform: translate(-50%, 140%);
+    z-index: 40; display: flex; align-items: center; gap: 10px;
+    background: var(--ink); color: var(--bg);
+    border-radius: 999px; padding: 12px 18px; box-shadow: 0 12px 30px -8px rgba(0,0,0,.4);
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; letter-spacing:.5px;
   }
-  .quote .by {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    color: var(--ink-mute);
-    margin-top: 8px;
-    letter-spacing: 0.3px;
+  .sticky-reserve.show { transform: translate(-50%, 0); }
+  .sticky-reserve a { color: var(--accent); text-decoration:none; letter-spacing:1px; text-transform:uppercase; font-size:12px; }
+  .sticky-reserve button { background:none; border:none; color:var(--ink-mute); cursor:pointer; font-size:16px; line-height:1; padding:0 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    .flip { transition: none !important; }
   }
 
-  /* ---------- AUTHOR ---------- */
-  .author-text {
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--ink);
+  /* ================= HERO: mazo estático + acciones ================= */
+  .hero .eyebrow { display:block; margin-bottom:14px; }
+  .herodeck {
+    position: relative; width: 152px; height: 226px; margin: 8px auto 30px;
   }
-  .author-text b { font-weight: 500; color: var(--primary); }
+  .herodeck__c {
+    position:absolute; inset:0; border-radius:10px; background:#fff;
+    border:1px solid var(--hairline); border-top:3px solid var(--accent);
+    box-shadow:0 1px 2px rgba(0,0,0,.05), 0 22px 50px -20px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .herodeck__c--b { transform:translate(11px,13px) rotate(2.6deg); opacity:.5; }
+  .herodeck__c--a { transform:translate(-8px,7px) rotate(-2deg);  opacity:.72; }
+  .herodeck__c--f { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
+  .hl-lens {
+    width:54px; height:54px; border-radius:50%; display:grid; place-items:center; font-size:21px;
+    border:1px solid var(--hairline);
+    background:
+      radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 62%),
+      repeating-linear-gradient(0deg, var(--hairline) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(90deg, var(--hairline) 0 1px, transparent 1px 9px);
+  }
+  .hl-wm  { font-family:'Fraunces',serif; font-weight:300; font-size:13px; color:var(--ink); letter-spacing:-.2px; }
+  .hl-wm b{ font-weight:500; color:var(--accent); }
+  .hl-tag { font-family:'DM Sans',sans-serif; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-mute); }
 
-  /* ---------- FAQ ---------- */
-  .faq details { border-bottom: 1px solid var(--hairline); }
-  .faq summary {
-    list-style: none;
-    cursor: pointer;
-    padding: 16px 0;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--ink);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+  .hero-actions { display:flex; flex-direction:column; align-items:center; gap:16px; }
+  .hero-cta {
+    display:inline-block; background:var(--ink); color:var(--bg);
+    font-family:'DM Sans',sans-serif; font-size:13px; letter-spacing:1.5px; text-transform:uppercase;
+    text-decoration:none; font-weight:500; padding:15px 32px; border-radius:999px;
+    transition:background .25s ease, transform .1s ease;
   }
-  .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after {
-    content: "+";
-    font-family: 'Fraunces', serif;
-    font-size: 20px;
-    color: var(--accent);
-    line-height: 1;
+  .hero-cta:hover { background:var(--primary); }
+  .hero-cta:active { transform:translateY(1px); }
+  .hero-cta:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+  .hero-try {
+    font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:15px;
+    color:var(--primary); text-decoration:none; border-bottom:1px solid var(--accent); padding-bottom:1px;
   }
-  .faq details[open] summary::after { content: "\2013"; }
-  .faq .answer {
-    padding: 0 0 18px;
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-    font-size: 15px;
-    line-height: 1.55;
-    color: var(--ink-soft);
-  }
-
-  .closing {
-    text-align: center;
-    padding: 36px 22px 0;
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 15px;
-    color: var(--ink-mute);
+  .hero-meta {
+    margin-top:24px; font-family:'DM Sans',sans-serif; font-size:12px; letter-spacing:.4px;
+    color:var(--ink-mute);
   }
 
-  footer {
-    padding: 26px 0 48px;
-    text-align: center;
-    color: var(--ink-mute);
-    font-size: 11px;
-    font-family: 'DM Sans', sans-serif;
-    letter-spacing: 0.3px;
+  /* ================= ORÁCULO (probá una carta) ================= */
+  .oraculo .wrap { text-align:center; }
+  .oraculo .eyebrow { display:block; margin-bottom:14px; }
+  .oraculo-intro {
+    font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:15px;
+    color:var(--ink-soft); max-width:34ch; margin:0 auto 26px; line-height:1.5;
   }
-  footer .wrap { line-height: 1.8; }
 
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  /* galería: bajada que ancla lo físico */
+  .gallery-lead {
+    font-family:'Fraunces',serif; font-weight:300; font-size:15px; color:var(--ink-soft);
+    margin:-8px 0 20px; line-height:1.5;
+  }
+
+  /* precios: contexto + ancla tachada */
+  .tiers-lead { font-family:'Fraunces',serif; font-weight:300; font-size:15px; color:var(--ink-soft); line-height:1.5; margin-bottom:18px; }
+  .tiers-foot { font-family:'Fraunces',serif; font-style:italic; font-weight:300; font-size:14px; color:var(--ink-soft); margin-top:14px; }
+  .price .was { font-family:'DM Sans',sans-serif; font-weight:400; font-size:13px; color:var(--ink-mute); text-decoration:line-through; margin-right:8px; white-space:nowrap; }
+  .price .cu  { font-family:'DM Sans',sans-serif; font-weight:400; font-size:12px; color:var(--ink-mute); margin-left:4px; letter-spacing:.3px; }
+
+  /* pasos de reserva */
+  .steps { list-style:none; counter-reset:s; margin:14px 0 20px; }
+  .steps li {
+    counter-increment:s; position:relative; padding:8px 0 8px 34px;
+    font-family:'DM Sans',sans-serif; font-size:14px; color:var(--ink); line-height:1.45;
+  }
+  .steps li::before {
+    content:counter(s); position:absolute; left:0; top:7px;
+    width:22px; height:22px; border-radius:50%;
+    background:color-mix(in srgb, var(--accent) 22%, transparent);
+    color:var(--primary); font-size:11px; font-weight:500;
+    display:grid; place-items:center;
+  }
 </style>
 </head>
 <body data-naipe="tecnologia">
@@ -420,21 +441,75 @@
     <div class="logo">ludo<b>poiesis</b></div>
   </div>
 
-  <!-- HERO -->
+  <!-- ===================== HERO ===================== -->
   <div class="hero">
     <div class="wrap">
-      <div class="card-frame">
-        <!-- Reemplazar por <img src="foto-carta.jpg" alt="Carta del naipe Tecnologia"> -->
-        <div class="placeholder">[ foto de una carta<br>del naipe ac&aacute; ]</div>
+      <span class="eyebrow">Preventa &middot; Primera edici&oacute;n de 500</span>
+      <h1>Un or&aacute;culo de papel para jugar la vida.</h1>
+      <p class="sub">El tercer naipe de Ludopoiesis. 69 cartas ilustradas, un texto en cada una. Se imprime, llega a tu casa, se baraja con las manos.</p>
+
+      <div class="herodeck" aria-hidden="true">
+        <span class="herodeck__c herodeck__c--b"></span>
+        <span class="herodeck__c herodeck__c--a"></span>
+        <span class="herodeck__c herodeck__c--f">
+          <span class="hl-lens">&#129504;</span>
+          <span class="hl-wm">ludo<b>poiesis</b></span>
+          <span class="hl-tag">Tecnolog&iacute;a &middot; 69 cartas</span>
+        </span>
       </div>
-      <span class="eyebrow">Ludopoiesis &mdash; Tecnolog&iacute;a</span>
-      <h1>Un or&aacute;culo para jugar la vida.</h1>
-      <p class="sub">El naipe de Tecnolog&iacute;a, tercer naipe de Ludopoiesis. En preventa antes de su primera edici&oacute;n.</p>
-      <a class="jump" href="#reservar">&iquest;Ya lo conoces? Reserva directo &rarr;</a>
+
+      <div class="hero-actions">
+        <a class="hero-cta" id="waHero" href="#" target="_blank" rel="noopener">Reservar por WhatsApp</a>
+        <a class="hero-try" href="#oraculo">Prueba una carta &darr;</a>
+      </div>
+      <div class="hero-meta">Nequi o cripto &middot; sin carrito, se reserva escribi&eacute;ndome</div>
     </div>
   </div>
 
-  <!-- DE QU&Eacute; SE TRATA -->
+  <!-- ===================== GALERÍA (prueba física) ===================== -->
+  <section class="galeria" id="galeria">
+    <div class="wrap">
+      <span class="eyebrow">El objeto, de cerca</span>
+      <p class="gallery-lead">Tecnolog&iacute;a a&uacute;n no sale de imprenta. Estas son fotos de Naturaleza y Fluir, sus hermanos &mdash; ya impresos, ya en segunda edici&oacute;n. El tercero es el mismo objeto: misma caja, misma factura, 69 cartas. Sus ilustraciones las pruebas abajo.</p>
+      <div class="gallery-strip" id="galleryStrip">
+        <!-- Se llena solo desde CONFIG.fotos. Placeholders si está vacío. -->
+      </div>
+      <div class="video-slot" id="videoSlot">
+        <div class="ph">[ espacio para un video ]</div>
+      </div>
+      <div class="gallery-note">Desliz&aacute; para ver m&aacute;s.</div>
+    </div>
+  </section>
+
+  <!-- ===================== PROBÁ UNA CARTA (lanzador del app) ===================== -->
+  <section class="oraculo" id="oraculo">
+    <div class="wrap">
+      <span class="eyebrow">Prueba una carta</span>
+      <p class="oraculo-intro">Cada carta es un lente. Saca una &mdash; es el texto real de una de las 69 de Tecnolog&iacute;a. En papel se ve a su manera.</p>
+      <div class="stage" id="stage">
+        <div class="flip" id="flip">
+          <div class="face illus">
+            <img id="cardImg" alt="Ilustraci&oacute;n de una carta del naipe Tecnolog&iacute;a">
+            <div class="shimmer" aria-hidden="true"></div>
+          </div>
+          <div class="face text">
+            <h3 id="cardTitle">Tecnolog&iacute;a</h3>
+            <p id="cardText"></p>
+          </div>
+        </div>
+        <div class="cover" id="cover" role="button" tabindex="0" aria-label="Sacar una carta">
+          <div class="lens"><span>&#129504;</span></div>
+          <div class="wm">ludo<b>poiesis</b></div>
+          <div class="tag">Tecnolog&iacute;a &middot; 69 cartas</div>
+        </div>
+      </div>
+
+      <button class="draw-btn" id="drawBtn">Saca una carta</button>
+      <div class="oracle-hint" id="hint"></div>
+    </div>
+  </section>
+
+  <!-- ===================== DE QUÉ SE TRATA ===================== -->
   <section class="about">
     <div class="wrap">
       <span class="eyebrow">De qu&eacute; se trata</span>
@@ -447,86 +522,54 @@
     </div>
   </section>
 
-  <!-- LAS CUATRO PERSPECTIVAS -->
+  <!-- ===================== CUATRO PERSPECTIVAS ===================== -->
   <section class="perspectivas-sec">
     <div class="wrap">
       <span class="eyebrow">Cuatro perspectivas</span>
       <ul class="perspectivas">
-        <li class="persp">
-          <span class="em">&#127793;</span>
-          <span class="name">Naturaleza</span>
-          <span class="desc">Las leyes, los ciclos, los seres.</span>
-        </li>
-        <li class="persp">
-          <span class="em">&#128167;</span>
-          <span class="name">Fluir</span>
-          <span class="desc">El movimiento, los aprendizajes, la adaptaci&oacute;n.</span>
-        </li>
-        <li class="persp active">
-          <span class="em">&#129504;</span>
-          <span class="name">Tecnolog&iacute;a<span class="tag">en preventa</span></span>
-          <span class="desc">Las herramientas, los procesos, lo que dise&ntilde;as y usas.</span>
-        </li>
-        <li class="persp">
-          <span class="em">&#10024;</span>
-          <span class="name">Abundancia</span>
-          <span class="desc">La actitud, el enfoque, los juicios.</span>
-        </li>
+        <li class="persp"><span class="em">&#127793;</span><span class="name">Naturaleza</span><span class="desc">Las leyes, los ciclos, los seres.</span></li>
+        <li class="persp"><span class="em">&#128167;</span><span class="name">Fluir</span><span class="desc">El movimiento, los aprendizajes, la adaptaci&oacute;n.</span></li>
+        <li class="persp active"><span class="em">&#129504;</span><span class="name">Tecnolog&iacute;a<span class="tagp">en preventa</span></span><span class="desc">Las herramientas, los procesos, lo que dise&ntilde;as y usas.</span></li>
+        <li class="persp"><span class="em">&#10024;</span><span class="name">Abundancia</span><span class="desc">La actitud, el enfoque, los juicios.</span></li>
       </ul>
     </div>
   </section>
 
-  <!-- C&Oacute;MO SE USA -->
+  <!-- ===================== CÓMO SE USA ===================== -->
   <section class="uso">
     <div class="wrap">
       <span class="eyebrow">C&oacute;mo se usa</span>
       <ul class="usos">
-        <li><b>Por diversi&oacute;n</b>Simplemente saca una carta y l&eacute;ela. Es un mensaje que te acompa&ntilde;ar&aacute; durante el d&iacute;a y te ayudar&aacute; a ver distinto.</li>
-        <li><b>Para pensar un problema</b>Haz una pregunta y saca una o varias cartas. Te ayudar&aacute;n a abordarlo con otra cara.</li>
-        <li><b>Entre varios</b>Lee una carta en grupo. Es una gran opci&oacute;n para romper el hielo o tener conversaciones profundas.</li>
-        <li><b>Con tu equipo</b>Una gran forma de arrancar o destrabar una reuni&oacute;n. Tambi&eacute;n para pensar soluciones a tus problemas.</li>
+        <li><b>Por diversi&oacute;n</b>Saca una carta y l&eacute;ela. Es un mensaje que te acompa&ntilde;a durante el d&iacute;a y te ayuda a ver distinto.</li>
+        <li><b>Para pensar un problema</b>Haz una pregunta y saca una o varias cartas. Te ayudan a abordarlo con otra cara.</li>
+        <li><b>Entre varios</b>Lee una carta en grupo. Ideal para romper el hielo o tener conversaciones profundas.</li>
+        <li><b>Con tu equipo</b>Una gran forma de arrancar o destrabar una reuni&oacute;n. Tambi&eacute;n para pensar soluciones.</li>
       </ul>
     </div>
   </section>
 
-  <!-- AC&Aacute; VA, M&Aacute;S ADELANTE, EL LANZADOR DE CARTA / EMBED DE LA APP.
-       La versi&oacute;n virtual ya existe en la app. Se integra despu&eacute;s. -->
-
-  <!-- PRECIOS + DISPONIBILIDAD -->
+  <!-- ===================== PRECIOS + DISPONIBILIDAD ===================== -->
   <section class="pricing" id="precios">
     <div class="wrap">
       <span class="eyebrow">Precios de preventa</span>
+      <p class="tiers-lead">En preventa reservas por menos que en tienda &mdash; y cada naipe que sumas baja de precio.</p>
       <div class="tiers">
-        <div class="tier">
-          <div class="label">1 naipe<span class="qty">precio de lista</span></div>
-          <div class="price">$79.000</div>
-        </div>
-        <div class="tier">
-          <div class="label">1 naipe<span class="qty">preventa</span></div>
-          <div class="price">$69.000</div>
-        </div>
-        <div class="tier">
-          <div class="label">5 naipes<span class="qty">$59.000 cada uno</span></div>
-          <div class="price">$295.000</div>
-        </div>
-        <div class="tier">
-          <div class="label">10 naipes<span class="qty">$49.000 cada uno</span></div>
-          <div class="price">$490.000</div>
-        </div>
-        <div class="tier">
-          <div class="label">50 naipes<span class="qty">$39.000 cada uno</span></div>
-          <div class="price">$1.950.000</div>
-        </div>
+        <div class="tier"><div class="label">1 naipe<span class="qty">en preventa</span></div><div class="price"><s class="was">$88.000</s>$69.000</div></div>
+        <div class="tier"><div class="label">5 naipes<span class="qty">$295.000 en total</span></div><div class="price">$59.000<span class="cu">c/u</span></div></div>
+        <div class="tier"><div class="label">10 naipes<span class="qty">$490.000 en total</span></div><div class="price">$49.000<span class="cu">c/u</span></div></div>
+        <div class="tier"><div class="label">50 naipes<span class="qty">$1.950.000 en total</span></div><div class="price">$39.000<span class="cu">c/u</span></div></div>
       </div>
+      <p class="tiers-foot">Cincuenta naipes salen a menos de la mitad del precio de tienda.</p>
       <div class="avail">
-        <div class="count">Edici&oacute;n de 500. Quedan <b id="restantes">230</b>.</div>
+        <div class="stockbar"><i id="stockFill"></i></div>
+        <div class="count">Edici&oacute;n de <b id="total">500</b>. Quedan <b id="restantes">&mdash;</b>.</div>
         <div class="edicion">Naturaleza y Fluir ya van por su segunda edici&oacute;n. Esta es la primera de Tecnolog&iacute;a.</div>
         <div class="updated" id="stock-updated"></div>
       </div>
     </div>
   </section>
 
-  <!-- PARA REGALAR -->
+  <!-- ===================== PARA REGALAR ===================== -->
   <section class="gift">
     <div class="wrap">
       <span class="eyebrow">Para regalar</span>
@@ -536,27 +579,32 @@
       </div>
       <div class="gift-note">
         Puedes sumar una tarjeta de dedicatoria dentro de cada caja, escrita por ti.<br><br>
-        <span class="deadline">Para navidad: reserva antes del [FECHA] y llega a tiempo.</span>
+        <span class="deadline">Para navidad: reserva antes del <span id="giftDeadline">[FECHA]</span> y llega a tiempo.</span>
       </div>
     </div>
   </section>
 
-  <!-- C&Oacute;MO RESERVAR -->
+  <!-- ===================== CÓMO RESERVAR ===================== -->
   <section class="reserve" id="reservar">
     <div class="wrap">
       <span class="eyebrow">C&oacute;mo reservar</span>
       <div class="reserve-box">
-        <p>Escr&iacute;beme cu&aacute;ntos naipes quieres y te paso los datos exactos. Pago por Nequi o cripto; para otras opciones, escr&iacute;beme.</p>
+        <p>Ac&aacute; no hay carrito ni pago online. Se reserva escribi&eacute;ndome, directo:</p>
+        <ol class="steps">
+          <li>Me dices cu&aacute;ntos naipes quieres.</li>
+          <li>Te paso los datos de pago (Nequi o cripto).</li>
+          <li>Consignas y anoto tu reserva. El contador de arriba baja.</li>
+        </ol>
         <p class="fine">Los env&iacute;os corren por tu cuenta. Cuando est&eacute; impreso, coordino el env&iacute;o y te paso el costo.</p>
-        <div class="nequi-row"><span class="k">Nequi:</span>TU_NUMERO_NEQUI</div>
-        <a class="cta" href="https://wa.me/TUNUMERO" target="_blank" rel="noopener">Escr&iacute;beme por WhatsApp para reservar</a>
-        <div class="alt-contact">o por correo a <a href="mailto:hola@ludopoiesis.com">hola@ludopoiesis.com</a></div>
-        <div class="whisper">&iquest;Lo quieres en ingl&eacute;s? Hay una edici&oacute;n limitada. <a href="https://wa.me/TUNUMERO" target="_blank" rel="noopener">Escr&iacute;beme.</a></div>
+        <div class="nequi-row"><span class="k">Nequi:</span><span id="nequiNum">TU_NUMERO_NEQUI</span></div>
+        <a class="cta" id="waCta" href="#" target="_blank" rel="noopener">Escr&iacute;beme por WhatsApp para reservar</a>
+        <div class="alt-contact">o por correo a <a id="emailLink" href="#">hola@ludopoiesis.com</a></div>
+        <div class="whisper">&iquest;Lo quieres en ingl&eacute;s? Hay una edici&oacute;n limitada. <a id="waEn" href="#" target="_blank" rel="noopener">Escr&iacute;beme.</a></div>
       </div>
     </div>
   </section>
 
-  <!-- TESTIMONIOS (se llena solo; oculto si est&aacute; vac&iacute;o) -->
+  <!-- ===================== TESTIMONIOS ===================== -->
   <section id="testimonios">
     <div class="wrap">
       <span class="eyebrow">Lo que dicen</span>
@@ -564,7 +612,7 @@
     </div>
   </section>
 
-  <!-- AUTOR -->
+  <!-- ===================== AUTOR ===================== -->
   <section class="author">
     <div class="wrap">
       <span class="eyebrow">Qui&eacute;n lo hizo</span>
@@ -572,38 +620,18 @@
     </div>
   </section>
 
-  <!-- FAQ -->
+  <!-- ===================== FAQ ===================== -->
   <section class="faq">
     <div class="wrap">
       <span class="eyebrow">Preguntas</span>
-      <details>
-        <summary>&iquest;Cu&aacute;ndo se imprime?</summary>
-        <div class="answer">Cuando la preventa cubre la tirada. Por eso es preventa: tu reserva es lo que lo hace existir.</div>
-      </details>
-      <details>
-        <summary>&iquest;Cu&aacute;ndo me llega?</summary>
-        <div class="answer">Antes de navidad. La fecha exacta la confirmo con la imprenta y la actualizo ac&aacute;.</div>
-      </details>
-      <details>
-        <summary>&iquest;C&oacute;mo son los env&iacute;os?</summary>
-        <div class="answer">Por cuenta de quien compra. Una vez impreso coordino el env&iacute;o y te paso el costo antes de despachar.</div>
-      </details>
-      <details>
-        <summary>&iquest;Env&iacute;as fuera de Colombia?</summary>
-        <div class="answer">Escr&iacute;beme y lo conversamos.</div>
-      </details>
-      <details>
-        <summary>&iquest;Hay versi&oacute;n en ingl&eacute;s?</summary>
-        <div class="answer">Una edici&oacute;n limitada, s&iacute;. Escr&iacute;beme y te cuento.</div>
-      </details>
-      <details>
-        <summary>&iquest;Hay otros naipes?</summary>
-        <div class="answer">Naturaleza y Fluir, ya impresos. Abundancia viene en camino. Ludopoiesis es un juego de cuatro.</div>
-      </details>
-      <details>
-        <summary>&iquest;C&oacute;mo pago?</summary>
-        <div class="answer">Nequi o cripto. Para otras opciones, escr&iacute;beme.</div>
-      </details>
+      <details><summary>&iquest;Esto es una app o un objeto f&iacute;sico?</summary><div class="answer">Un naipe f&iacute;sico: 69 cartas ilustradas, impresas, en su caja. La carta que sacas arriba es una muestra del contenido real, para que lo pruebes antes de reservar.</div></details>
+      <details><summary>&iquest;Cu&aacute;ndo se imprime?</summary><div class="answer">La tirada de 500 se imprime de todos modos. La preventa es para reservar la tuya antes de que se agote, y a mejor precio que despu&eacute;s.</div></details>
+      <details><summary>&iquest;Cu&aacute;ndo me llega?</summary><div class="answer">Antes de navidad. La fecha exacta la confirmo con la imprenta y la actualizo ac&aacute;.</div></details>
+      <details><summary>&iquest;C&oacute;mo son los env&iacute;os?</summary><div class="answer">Por cuenta de quien compra. Una vez impreso coordino el env&iacute;o y te paso el costo antes de despachar.</div></details>
+      <details><summary>&iquest;Env&iacute;as fuera de Colombia?</summary><div class="answer">Escr&iacute;beme y lo conversamos.</div></details>
+      <details><summary>&iquest;Hay versi&oacute;n en ingl&eacute;s?</summary><div class="answer">Una edici&oacute;n limitada, s&iacute;. Escr&iacute;beme y te cuento.</div></details>
+      <details><summary>&iquest;Hay otros naipes?</summary><div class="answer">Naturaleza y Fluir, ya impresos. Abundancia viene en camino. Ludopoiesis es un juego de cuatro.</div></details>
+      <details><summary>&iquest;C&oacute;mo pago?</summary><div class="answer">Nequi o cripto. Para otras opciones, escr&iacute;beme.</div></details>
     </div>
   </section>
 
@@ -616,31 +644,221 @@
     </div>
   </footer>
 
-  <script>
-    /* =========================================================
-       DISPONIBILIDAD - cambia unidadesRestantes a mano tras cada venta
-       ========================================================= */
-    const unidadesRestantes = 400;
-    const fechaActualizacion = "2026-07-15";
+  <!-- sticky reserve -->
+  <div class="sticky-reserve" id="stickyReserve">
+    <span>Naipe Tecnolog&iacute;a</span>
+    <a href="#reservar" id="stickyLink">Reservar</a>
+    <button id="stickyClose" aria-label="Cerrar">&times;</button>
+  </div>
 
-    document.getElementById('restantes').textContent = unidadesRestantes;
-    document.getElementById('stock-updated').textContent = `actualizado ${fechaActualizacion}`;
+<script>
+/* =========================================================
+   CONFIG — edita TODO desde aquí (un solo lugar)
+   ========================================================= */
+const CONFIG = {
+  whatsapp:      "573115058149",          // internacional sin +  ·  ej: 573001234567
+  nequi:         "3115058149",
+  email:         "hola@ludopoiesis.com",
+  giftDeadline:  "8 de Octubre",           // ej: "5 de diciembre"
+  // —— STOCK (modo manual) ——
+  // Cambiá "quedan" acá cuando reserven y volvé a subir la página. Eso es todo.
+  stockTotal:     500,
+  stockRestantes: 400,                // ← el número que se muestra ("quedan N")
+  stockDate:      "2026-07-15",       // fecha que aparece bajo el número
+  // Opcional: si algún día tenés un contador automático (p.ej. un webhook de Make),
+  // pegá su URL acá y la página lo usará en vez del número de arriba. Vacío = manual.
+  stockUrl:       "https://preventabot.juanpablocalderon.workers.dev",
+  imgBase:       "https://ludopoiesis.app/img/",   // ilustraciones ya publicadas
 
-    /* =========================================================
-       TESTIMONIOS - agrega entradas ac&aacute; y aparecen solas.
-       Si el array queda vac&iacute;o, la secci&oacute;n no se muestra.
-       ========================================================= */
-    const testimonios = [
-      // { texto: "Lo saco cada ma&ntilde;ana antes del caf&eacute;.", autor: "Nombre, ciudad" },
-    ];
+  // Fotos reales del naipe. Van en la carpeta /img junto al index.
+  // OJO: el nombre debe ser EXACTO (mayúsculas y extensión cuentan en Cloudflare).
+  // El orden de esta lista = el orden en que aparecen. Agrega/quita/reordena a gusto.
+  fotos: [
+    "img/foto1.JPG",
+    "img/foto2.JPG",
+    "img/foto3.jpeg",
+    "img/foto4.jpg",
+    "img/foto6.jpeg",
+    "img/foto7.jpeg",
+    "img/foto8.jpeg",
+    "img/foto9.jpeg",
+    "img/foto10.jpeg",
+    "img/foto11.jpeg",
+    "img/foto12.jpeg",
+  ],
+  // Video (opcional): pega una URL .mp4 o un embed de YouTube/Vimeo.
+  video: "",   // ej: "https://www.youtube.com/embed/XXXX" o "https://.../video.mp4"
 
-    if (testimonios.length) {
-      document.getElementById('testimonios').style.display = 'block';
-      document.getElementById('testimonios-list').innerHTML = testimonios.map(t => `
-        <div class="quote"><p>${t.texto}</p><div class="by">&mdash; ${t.autor}</div></div>
-      `).join('');
+  testimonios: [
+    // { texto: "Lo saco cada mañana antes del café.", autor: "Nombre, ciudad" },
+  ]
+};
+
+/* =========================================================
+   ENLACES (WhatsApp, Nequi, email) — se arman solos
+   ========================================================= */
+(function(){
+  const msg = encodeURIComponent("Hola Juan 👋 quiero reservar el naipe de Tecnología de Ludopoiesis.");
+  const msgEn = encodeURIComponent("Hola Juan 👋 me interesa la edición en inglés del naipe de Tecnología.");
+  const wa = `https://wa.me/${CONFIG.whatsapp}?text=${msg}`;
+  document.getElementById('waCta').href = wa;
+  document.getElementById('waEn').href = `https://wa.me/${CONFIG.whatsapp}?text=${msgEn}`;
+  document.getElementById('stickyLink').href = wa;
+  const _wh = document.getElementById('waHero'); if (_wh) _wh.href = wa;
+  document.getElementById('nequiNum').textContent = CONFIG.nequi;
+  const em = document.getElementById('emailLink');
+  em.textContent = CONFIG.email; em.href = `mailto:${CONFIG.email}?subject=Reserva%20naipe%20Tecnología`;
+  document.getElementById('giftDeadline').textContent = CONFIG.giftDeadline;
+  document.getElementById('total').textContent = CONFIG.stockTotal;
+})();
+
+/* =========================================================
+   EL NAIPE — 69 cartas de Tecnología (texto de la app)
+   ========================================================= */
+const CARTAS = /*__CARTAS__*/[{"id": "T01", "t": "TECNOLOGÍA", "x": "Cuando tu herramienta es un martillo,\nlos problemas no solo son puntillas.\n\nAdemás de clavar, \nun martillo también saca puntillas,\nhace palanca,\nrompe y talla piedras,\nforja, molda metales,\nes un arma de combate,\ntiene usos en la música, \nconstrucción, culinaria y agricultura. \n\nEs una herramienta que puede hacer \nmás herramientas.\nEl potencial es infinito."}, {"id": "T02", "t": "Ver todo", "x": "No podemos ver todo.\nTenemos que enfocar y dirigir nuestra atención a ciertos aspectos.\nPodemos ver detalles, podemos ver la esencia. \nPodemos ver lo uno, podemos ver lo otro. \nNo el todo.\n\nTiene que ver con infinitos, con fractalidad.\nHay escalas atómicas y astronómicas. \nPara verlas necesito lentes diferentes.\nVeo lo chiquito, o veo lo grande.\n\nEl principio de incertidumbre deja posibilidad \ny esperanza. Observo velocidad. Observo posición.\n\nEn un mundo donde vida es movimiento, mientras observo a uno, el otro es posibilidad.\n\nNo se trata de ver todo, tampoco de entenderlo. \nEntender todo tal vez deja un mundo aburrido. \nNo ver todo hace que yo vuelva por más.\n\nSe trata de admirar, se trata de asombrarse. \nDe encontrar algo nuevo en cada instante."}, {"id": "T03", "t": "Filtros", "x": "Somos filtros.\nProcesamos lo que consumimos.\nRecibimos y entregamos.\nLo que entra, sale diferente.\nTenemos la opción de mejorarlo o empeorarlo.\nNo empeores las cosas, mejóralas.\n\nVisualiza lo bueno, quita lo malo.\nLo que dejas fluir vive y se reproduce.\nLo que se estanca, muere.\nMejoremos todo.\n\nTú tienes el poder de curar.\nSi dejamos pasar lo mejor, el mundo mejorará."}, {"id": "T04", "t": "Mirar al caminar", "x": "Hay que mirar el piso para pisar bien.\nHay que levantar la mirada para no estrellarnos.\nY que no se olvide mirar el paisaje.\n\nQue no se olvide observar\nlo que hay cerca y lo que hay lejos.\nEntre más detalle captemos, \nmás enriquecedora es la caminata.\n\nLlena de asombro tu camino."}, {"id": "T05", "t": "Como lo veo, es", "x": "Como lo veo, es.\nEs cuestión de perspectiva.\nMi perspectiva.\nNo es que vea bien o mal.\nVeo a mi manera."}, {"id": "T06", "t": "Descubrir", "x": "Para descubrir necesito mirar diferente.\n\nPensamos que se trata de llegar a sitios recónditos, \nde encontrar tremendos paisajes,\nde caminar largas horas a donde nadie ha llegado.\n\nDescubrir se trata de mirar distinto, despertar curiosidad y asombro."}, {"id": "T07", "t": "Observar mi estado", "x": "De lejos todo se ve continuo.\nDe cerca aparecen niveles.\nDesenfocando vemos continuidad.\nEnfocado observamos niveles, categorías, estados.\n\nTener estado es un efecto de observar.\nCon energía puedo pasar de un estado a otro.\nPuedo atravesar barreras, \npasar por encima, subir y bajar niveles.\n\nHoy puedes observarte y así entrar en un estado.\nCambiarlo es cuestión de absorber \no soltar la energía necesaria \npara cambiar de estado.\n\nBusca un estado que te guste."}, {"id": "T08", "t": "¿Qué dejaste por fuera?", "x": "Cuando escogemos algo, usamos algún criterio para elegir lo que queremos.\nCon el mismo acto también elegimos lo que se queda por fuera.\n\nUnos se quedan por fuera porque no los elegimos, otros porque no los vemos.\n\n¿Qué dejaste por fuera? \n\nAhí pueden haber oportunidades."}, {"id": "T09", "t": "¿Dónde es tierra?", "x": "¿Dónde es tierra?\nMedimos con respecto a algo.\nTú puedes ser la tierra, o alguien más.\n\nSi tú eres tierra, estás en cero.\nSi es arriba, estás negativo.\nSi es abajo, estás positivo.\nTú decides."}, {"id": "T10", "t": "Poner la barra", "x": "Es bueno poner una barra para tener una meta. \nEs lo que motiva a llegar un poco más lejos.\nNo puede estar demasiado lejos, y no puede estar demasiado fácil.\n¿Dónde pongo la barra?\nUn poquito más arriba."}, {"id": "T11", "t": "Calidad de vida", "x": "Se nos olvida tener claro qué es calidad de vida.\nEsto pasa porque estamos enfocados \nen la expectativa más que en la apreciación.\n\nDeja de pensar en lo que quieres \ny mira lo que tienes."}, {"id": "T12", "t": "Ver crecer", "x": "Cuando voy despacio veo crecer las plantas.\nVeo cómo se mueven durante el día, durante el año.\nVeo cómo caminan y escucho cómo hablan.\n\nCuando voy rápido a veces ni siquiera veo las plantas.\nLas piso, las estrello, las rompo.\nVeo el mundo diferente de acuerdo a mi velocidad.\nEsto es la teoría de la relatividad.\n\nEs bueno ver las cosas rápido y también despacio.\nEncontrar a qué velocidad ves cosas importantes.\n\nPara ver bien, tienes que cambiar tu velocidad."}, {"id": "T13", "t": "Observador del observador", "x": "“Lo que no se mide, no se puede gestionar”.\n\nEs importante gestionar y es importante medir.\nMedir nos ayuda a saber en dónde estamos.\nGestionar, dirigir hacia dónde vamos.\n\nTenemos que encontrar una buena regla y usarla apropiadamente.\nLo que yo mida y cómo lo mida, \nva a ser lo que yo gestiono.\n\nEn la cibernética de la cibernética hablamos del observador del observador.\nSi estás midiendo algo, observa el observador que eres.\nEs importante observar cómo observo."}, {"id": "T14", "t": "Estúpidos", "x": "“Los estúpidos no saben qué tan estúpidos son”.\nLo mismo pasa con cualquier habilidad. Si yo soy malo en música, no puedo saber qué tan malo soy porque no tengo las herramientas para evaluar. Para saber qué tan bueno soy necesito las mismas habilidades para ser bueno en ese algo. El efecto Dunning-Kruger dice que un individuo malo va a percibir su habilidad un poco mejor de lo que en verdad es, debido a que su habilidad es mala.\n\nSiempre vamos a pensar que somos un poco mejor de lo que en verdad somos. O, en otras palabras, para un experto nosotros no somos tan buenos como creemos.\n\nEs bueno tener esto en cuenta."}, {"id": "T15", "t": "Memoria fotográfica", "x": "Almacenar una imagen de mi vida cada 30 segundos me hace pensar dónde quiero estar, con quién quiero estar, me hace pensar a dónde quiero mirar.\n\nMe hace demorarme más en momentos que quiero recordar, y pasar rápido por momentos menos interesantes. Es un reloj, es un metrónomo, es un concientizador.\n\nAlmacenando el pasado soy más consciente del presente porque la memoria existe en el presente. Y revivir memorias me hace repasar lo que pasó, para aprovechar más lo que está pasando."}, {"id": "T16", "t": "Sentir la lluvia", "x": "“Algunas personas sienten la lluvia, otros simplemente se mojan” \n\nPor pensar en gripa, ropa mojada y frío, no vivimos el momento.\nDejamos de sentir, nos mortificamos.\nSi estás bajo la lluvia, siéntela, vívela.\nDisfruta."}, {"id": "T17", "t": "Pantallas", "x": "Las pantallas están por todos lados.\nNos permiten interactuar con el mundo.\nPermiten que el mundo interactúe con nosotros.\nObservamos y nos observa.\n\nSon nuestra forma de tocar una gran nube.\nY que esa nube nos toque.\nSinapsis.\n\nHay más de 5 billones de pantallas.\nEste año nacerán 3.8 billones o más.\n\nEventualmente todo será pantalla.\nRopa, piel, paredes, muebles y vidrios.\nAlgunas flotarán en el aire.\n\nEs la imprenta de nuestra época. \nNos conectan."}, {"id": "T18", "t": "Observar un proceso", "x": "Nadie puede observar un proceso desde afuera.\nTodo aquel que observe está interviniendo, y por lo tanto, es parte del proceso.\nNo se puede medir sin alterar la medición.\nSi quieres observar cómo estás, la observación va a cambiar cómo estás.\n\nPor eso es muy importante observar al observador.\nNadie de afuera te puede decir cómo estás.\nEn el momento en el que él te observa, está adentro. Es parte de ti."}, {"id": "T19", "t": "Magia", "x": "En la magia hay dos personajes: el mago y los que aprecian la magia, es decir, su audiencia.\n\nEl mago no ve la magia. Él sacrifica esta capacidad de asombro para crear, inventar y sorprender. Él conoce el truco. Él inventa y mejora trucos. \n\nEl mago es un creador que quiere entretener. \n\nEl mago genera vida, movimiento a través de la curiosidad y el asombro.\n\n¿Cómo no ver la magia en una luciérnaga? ¿Cómo no ver la magia en una flor que cura o en el vuelo de un pájaro? ¿En el cine? ¿O en la realidad aumentada?\n\nEn el momento en que yo entiendo el truco, la magia desaparece. Y aparece un tesoro que es la oportunidad de ser mago. De crear un nuevo truco. De generar asombro, y ojalá este asombro cree un nuevo mago.\n\n¿Cuál es tu truco? ¿Está generando asombro? ¿O es hora de inventarse un nuevo truco?"}, {"id": "T20", "t": "La memoria no se llena", "x": "Nuestra memoria no se llena. Entre más la uses, mejor se pone.\nSe crean conexiones y es más fácil encontrar lo que necesitas.\nCada vez que recuerdas, refuerzas. Cada vez que recuerdas, fortaleces.\nAsocias y conectas. Con una súper memoria, jugamos mejor, hacemos magia.\n\n¡Ejercita tu memoria!"}, {"id": "T21", "t": "Arreglador de mundos", "x": "Hoy puedes jugar a ser arreglador de mundos.\nTodo lo que sientas que podría mejorar, mejóralo.\n\nArreglar pequeñas cosas es fácil.\nNo consume demasiada energía y mejora el ambiente.\n\nAcuérdate que el mundo es tuyo.\nSi lo mejoras, tu mundo será más agradable."}, {"id": "T22", "t": "Opiniones", "x": "Pregunta a todo el mundo.\nPide consejos.\nEscucha.\nDigiere.\nY haz lo que tu intuición te dice.\nUno sabe qué necesita, uno sabe qué está bien.\nLas opiniones alimentan la intuición.\nConfía en ti.\nTú sabes mejor cómo hacer las cosas."}, {"id": "T23", "t": "Conocimiento", "x": "Lo opuesto de conocimiento no es ignorancia.\nEl conocimiento es un regalo.\nNo tenerlo también.\nY para ciertos casos puede ser mejor no saber.\n\nLo opuesto de conocimiento es posibilidad.\nLo opuesto de conocimiento es asombro.\nEs oportunidad."}, {"id": "T24", "t": "Sorprenderse", "x": "Es imposible sorprenderse a uno mismo a propósito.\nNecesitas a alguien, o algo que te sorprenda.\n\nLo que sí podemos hacer es entrenar el asombro, entrenar la capacidad de sorprendernos, observar más detalles, y estar más atentos.\n\nDe esta manera encontraremos más sorpresas."}, {"id": "T25", "t": "La receta", "x": "La receta sirve para que, el que no sabe, arranque.\nEs una guía de por dónde empezar.\nY hacia dónde voy.\n\nCuando ya sé, no necesito receta.\nNo uso receta.\nSoy experto.\n\nAhora puedo inspirar y motivar compartiendo una nueva receta."}, {"id": "T26", "t": "Leyes de Clarke", "x": "1. Cuando un científico eminente pero anciano afirma que algo es posible, es casi seguro que tiene razón. Cuando afirma que algo es imposible, muy probablemente está equivocado.\n2. La única manera de descubrir los límites de lo posible es aventurarse un poco más allá, hacia lo imposible.\n3. Toda tecnología lo suficientemente avanzada es indistinguible de la magia.\n\nMe gustan estas leyes del gran Arthur C. Clarke. Hoy en particular estoy fascinado con la magia de la tecnología, con lo que viene. Con lo que está. Me encanta que no es la misma para cada persona. Yo me fascino con algunas cosas y otros con otras.\n\nCuando aparecen los imposibles estoy tal vez tomando el rol de científico anciano, y me falta aventurarme más allá.\n\nMi magia es tecnología avanzada."}, {"id": "T27", "t": "Teleportarse", "x": "Contrario a lo que todos piensan, teleportarse es moverse a una velocidad infinitamente pequeña. Es transformarse en cada uno de los estados que existen entre un punto a y un punto b.\n\nFluir con la naturaleza a través de infinitos estados requiere estar plenamente consciente y conectado. Requiere parar el tiempo.\n\nYo soy todo. Yo voy cambiando. Yo me convierto en mi destino.\n\nTip: Teleportarse es difícil con reloj."}, {"id": "T28", "t": "Pellízcate", "x": "No te pellizques para saber si estás despierto. Pellízcate para saber si estás soñando.\n\nCuando me pellizco y me doy cuenta que es un sueño, me da alegría. Puedo volar, teletransportarme y hacer lo que quiera con quien quiera.\n\nDespierto me limito.\n\nHacer ese chequeo de la realidad es bueno. No porque el estado en que quiero estar sea el despierto, sino el soñando. Nos recuerda que debemos soñar, que debemos ir más allá, que podemos hacer lo que queramos."}, {"id": "T29", "t": "El mundo real", "x": "No hay tal cosa como el mundo irreal. Todo mundo es real.\nLos juegos electrónicos, las redes sociales, los viajes psicodélicos, la realidad virtual, los amigos y las cenas familiares son reales.\n\nFacebook es tan real como el parque de la esquina.\nNo hay tal cosa como un mundo real y otro irreal.\n\nReal es que yo escojo mi realidad.\n¿Cuál es mi realidad? La que yo cree.\nSi yo quiero vivir en un mundo virtual, o quiero desconectarme y salir a visitar un bosque, es mi decisión y es real.\n\nNo pensemos que se puede escapar la realidad.\nNo pensemos que hay algo real y que hay algo irreal.\nCada instante de mi tiempo es real. \nCada mundo que yo visito es real, existe.\n\nAhora pensemos: ¿Dónde quiero vivir mi realidad?"}, {"id": "T30", "t": "Una cascada", "x": "En mi juego de la vida meterse en una cascada da +1000 puntos. \nNo meterse da -500.\n\nUsualmente el día que llego a una cascada obtengo muchos puntos. Se descubren lugares mágicos. No se entra a Bogotá. Aparece una especie que no conocía. Una nueva planta o un nuevo pájaro. Todos dan puntos.\n\nLos puntos me ayudan a tener mejores días y encontrar más cascadas.\nLas cascadas me limpian, me masajean y me llenan de energía.\nBusquemos más días con cascadas."}, {"id": "T31", "t": "Lugares mágicos", "x": "En todos lados hay lugares mágicos. Hay zonas en donde abundan más que otras. \n\nPuede ser una piedra, la cima de un árbol, una cueva, una terraza, un bosque, o el techo del edificio. Y que sean mágicos es relativo.\n\nUno es quien hace que un lugar sea mágico y qué tan mágico. Son lugares para cargarse de energía, y para descargar malas energías. Para reflexionar. Para conectarse. Lugares de observación, interna y externa.\n\nEs bueno visitar estos lugares frecuentemente. Puede hacer que tu día sea especial.\n\nPD: En mi juego de la vida visitar un lugar mágico da +1000 puntos. Encontrar uno que no conocía da +5000."}, {"id": "T32", "t": "Hacer amanecer", "x": "Hacer amanecer no siempre es fácil, y sin embargo lo hacemos todos los días. A veces conscientes, a veces inconscientes.\n\nCada uno en su universo hace amanecer. \nUnos somos más hábiles que otros, más coloridos, más mágicos, algunos sufridos, todos llenos de esperanza, marcando el inicio del resto por venir.\nEnseñando lo qué es un ciclo,\nnuestras vueltas,\nque aunque diferente todo sigue igual.\nArrancamos y volvemos a arrancar."}, {"id": "T33", "t": "Los portales", "x": "Dentro de mi juego de la vida existen portales. Son curvas cerradas por las que uno puede atravesar. De todas las formas y tamaños. Un marco de una puerta, una ventana, un hueco, en un árbol o debajo de una mesa. En los sitios más inesperados.\n\nLos portales sirven para transformar la realidad. Cada vez que atravieso uno, cambio el mundo. Piensa, ¿cómo va a ser el mundo una vez atravieses? Y luego atraviesa. \n\nPuedes tener portales especializados para ciertos cambios. También puedes devolverte. Ellos siempre tienen dos lados. Pero ten en cuenta que un portal que se atraviesa para el otro lado no necesariamente genera el cambio contrario."}, {"id": "T34", "t": "El juego de curiosidad", "x": "La curiosidad es mágica: mueve, activa, despierta.\n\nHoy voy a anotar todo lo que me genera curiosidad en una lista: conceptos, hechos, personajes, actividades, lugares, o lo que yo quiera.\n\nVoy a dedicar unos minutos, o tal vez un par de horas a satisfacerla, a alimentarla. \nNo se necesita mucho tiempo, tampoco dedicación. Se necesita cumplir con un horario y jugar con mi curiosidad.\n\nEscojo algo de mi lista y saco el niño interno. Investigo, construyo, exploro, pregunto, hago. Durante el juego agrego más elementos a la lista de cosas que me causan curiosidad.\n\nY la siguiente semana vuelvo a jugar."}, {"id": "T35", "t": "Diseñador de realidades", "x": "Pronto será más fácil jugar con realidades.\nPodremos diseñar, escoger, modificar, comprar y compartir realidades.\nCada realidad tendrá sus reglas.\nY será más fácil jugar con estas reglas.\n\nTendremos libertad escogiendo nuestros juegos, moldeando nuestra vida, y nuestra realidad.\n\nA alguien se le pagará por ser diseñador de realidades. \nOtros pagaremos por jugar con realidades.\n\nMientras tanto, tú puedes diseñar y jugar tu realidad. Es gratis."}, {"id": "T36", "t": "Llegar a la cima", "x": "Hay muchas formas de llegar a la cima, \ny hay muchas cimas.\n\nLas cimas no están siempre en el mismo lugar, son dinámicas. Además se mueven según lo que yo haga. Con cada paso que doy cambio su definición. Si me quedo quieto, los otros seres también cambian su definición. Es como una carrera de brazos. Es el efecto de la reina roja.\n\nLo único que podemos hacer es seguir subiendo en busca de cimas. Acá se puede ver mejor el horizonte. Si por alguna razón llego a una cima, hay que bajar y buscar una cima más alta o más chévere."}, {"id": "T37", "t": "La zona de confort", "x": "Si no salgo de la zona de confort no llego a la zona de aventura. \n\nLa zona de aventura es a donde llegan los maestros, los acompañantes, los obstáculos, las oportunidades, y las recompensas.\n\nLa zona de confort es aburrida. La zona de aventura es entretenida."}, {"id": "T38", "t": "Miedo y ambición", "x": "El miedo nos frena.\nLa ambición no nos deja frenar.\nSon dos fuerzas que debemos aprender a controlar."}, {"id": "T39", "t": "Trade-off: Explotar - Explorar", "x": "Tengo la opción de explorar o explotar. Ver oportunidades y salir de mi entorno local, o aprovechar lo que conozco y sé que funciona. ¿Será que ensayo un nuevo restaurante o voy al que ya conozco?\nAsí aprendemos. Primero fallamos y una vez entendemos cómo funciona, lo utilizamos.\nAlgunos consejos:\nSi estás satisfecho, deja de explorar.\nSi tienes que entregar pronto, deja de explorar.\nSi el entorno está monótono o las oportunidades escasean, sal a explorar.\nSi te sientes estancado, sal a explorar."}, {"id": "T40", "t": "Encontrar el camino", "x": "“Encontramos el camino cuando nos perdemos, cualquier otra cosa se llama seguir un mapa” \n\nPara encontrar el camino primero tenemos que perdernos.\nSi no nos hemos perdido, no vamos a encontrarlo.\nEs fácil encontrar mapas para una infinidad de caminos. Y seguirlos.\nSeguir el mapa es recorrer un camino que alguien más abrió. No está mal. \nSe vuelve un dilema escoger cuál mapa seguir.\n\n¿Necesito un mapa?\n\nA mí me gusta más la opción abrir camino, salir a perderse.\nHay más sorpresas, más asombro. \nEstá la posibilidad de conquistar, y encontrar el camino.\n\nEn lugar de conseguir un mapa, consigue un machete."}, {"id": "T41", "t": "Salir", "x": "Para ganar una pelea tienes que salir al ring.\nPara tener una aventura tienes que salir de tu zona de confort.\nPara conocer algo nuevo tienes que vivirlo.\nSi siempre haces lo mismo, todo seguirá igual.\nHay que salir. Hay que aventurarse.\nViviendo nuevas experiencias, vienen cosas nuevas."}, {"id": "T42", "t": "Arranco una cosa y termino otra", "x": "Cuando uno arranca tiene una idea de hacia dónde va. \nEs imposible saber exactamente qué va a pasar. \nNo importa qué tan expertos seamos, o qué tan bien hemos planeado. \nSiempre el resultado saldrá diferente.\n\nDurante el camino tendré que tomar decisiones.\nLo importante es arrancar y lo importante es terminar. \nSi no arranco no va a pasar nada. \nSi no termino no voy a ver el resultado que me permitirá aprender.\n\nUna vez arranque hay movimiento, hay vida, habrá cambio y eso es lo que una idea quiere."}, {"id": "T43", "t": "Volver a empezar", "x": "Volver a empezar es jugar un juego finito, como si todo hubiera acabado. \nNada acaba, siempre queda algo. Volver a empezar es dar otra vuelta.\nNo la misma vuelta. Ahora es otro mundo que conserva el pasado.\nAprendimos y ahora estamos en camino a afrontar nuevos desafíos.\n\nLa anterior vuelta nos enseñó, nos hizo maestros. Ahora hay que arrancar un nuevo camino hacia ser maestros de un nuevo mundo.\n\nAhora vienen cosas nuevas y las vamos a afrontar de otra manera, aprovechando los aprendizajes de la aventura pasada.\n\nHay que arrancar por ordenar, y arreglar el desorden que dejamos. Y hacer.\nEn el juego infinito arrancamos el día que nacemos y terminamos el día que se acaba el juego. No hay un volver a empezar, solo ser."}, {"id": "T44", "t": "Que lo que hagas no sea el fin", "x": "Es mejor que lo que hagamos no sea el fin, sino el comienzo. Nuestro propósito, o lo que hacemos, puede tener un fin particular o puede ser el comienzo de algo. Esa es la diferencia entre jugar juegos finitos e infinitos.\n\nYo puedo entender la vida como un juego que no acaba, o como la sumatoria de muchos juegos finitos. Jugar el juego infinito es convertir cada situación en el comienzo de una nueva vida. Cada momento es un nuevo estado dentro de mi juego infinito.\n\nTerminar juegos implica dejar atrás ese juego, esa experiencia, esa historia y ese aprendizaje. Es dejar de conectar lo que pasó con el presente. \n\nEs mejor entender mi propósito como el comienzo de una nueva fase. Así cada momento es la oportunidad de transformar el juego. Es posibilidad. Es jugar un juego que se adapta. Que cambia conmigo y me cambia.\n\nQue lo que hagas no sea el fin, sino el comienzo."}, {"id": "T45", "t": "Apuesta en ti", "x": "Queremos que nos apoyen, que apoyen nuestras ideas.\nY muchas veces ni siquiera nosotros nos creemos.\nTú debes creer en ti. Tú debes hacerte barra.\nSi tu no crees en tu idea, si tú no crees en tus capacidades, ¿entonces quién?\nApuesta en ti."}, {"id": "T46", "t": "Tomar una ruta diferente", "x": "Un buen juego es tomar una ruta diferente todos los días. Intenta no repetir. Innova en todos tus trayectos. Fluye, improvisa, pierde el miedo de perderte. Explora. Desarrolla el asombro y la atención. También la paciencia.\nEs jugar con el tiempo y las distancias, ya que no sabes cuánto demoras, ni qué tan largo son los trayectos. Ni con quién te vas a encontrar. Es romper la monotonía y hacer todos tus días diferentes.\n\nSiempre vas a encontrar algo nuevo."}, {"id": "T47", "t": "Camino", "x": "En tu camino te vas a cruzar con personas.\nAlgunas van más rápido, otras más lento.\nAlgunas irán a una velocidad parecida.\nAlgunos para un lado, algunos para otro.\nTodos diferentes.\nCada uno tiene su estilo, un propio caminado.\nSu propio ritmo. Cada uno hace su camino.\nPreocúpate por tu camino. Deja que los demás pasen.\nCada camino es diferente. Todos son valiosos."}, {"id": "T48", "t": "Abrir camino", "x": "Abrir camino es difícil, exige trabajo.\nImplica que vamos aprendiendo, enfrentando obstáculos. \nEs un proceso que consume energía.\n\nUna vez ya abrimos camino, recorrerlo es más fácil. Ya sabemos hacerlo.\nEn el camino hacia ser buenos; una vez lo somos, es más fácil quedarse ahí que dejar de serlo.\n\nAbrir caminos vale la pena."}, {"id": "T49", "t": "Recorrer el camino", "x": "Cualquier camino es simplemente un camino.\nHay infinitos caminos.\nRecorro caminos y siempre estoy acá.\nTodos son iguales, no llevan a ninguna parte.\n\nImporta recorrerlo, no a dónde llego.\nEs el camino el que me cambia, el recorrido, no el destino.\n\n¿Cuál es mejor?\n\nEl que me da buena espina, el que dice la intuición, el camino que me dice el corazón."}, {"id": "T50", "t": "El coraje", "x": "Cuando todavía no tengo confianza necesito coraje.\nLa confianza aparece cuando ya conozco, cuando ya he vivido.\nEl coraje viene antes.\nMe motiva a entrar en el camino, donde desarrollo la confianza.\nHay que tener coraje para arrancar."}, {"id": "T51", "t": "Zigzag", "x": "Para llegar de A a B hay infinitas posibilidades. La línea recta es la más corta en un plano cartesiano, pero no siempre es la más fácil.\n\nEl zigzag es una buena estrategia. Es corregir todo el tiempo. Descompone fuerzas. Descompone la gravedad cuando subo una montaña. Y maximiza el efecto del viento cuando voy en un velero.\n\nEn la vida es difícil andar en línea recta. Mejor andemos en zigzag."}, {"id": "T52", "t": "Miedo - curiosidad", "x": "En cada momento existe una bifurcación. Tenemos la opción de elegir entre dos caminos. Por un lado está el camino de la curiosidad, por el otro el del miedo. \n\nEl miedo nos detiene, nos quita inercia, es una fuerza negativa que nos protege. La curiosidad es una fuerza positiva que nos acelera. ¿Hacia dónde? A descubrir algo. Para abrir puertas. Tal vez para cometer un error y aprender de él. \n\nSi me quedo con el miedo todo va a seguir relativamente igual. Si tomo el camino de la curiosidad algo va a pasar."}, {"id": "T53", "t": "¿Cuál es la pregunta?", "x": "En la “Guía del Viajero Intergaláctico” diseñaron un gran computador para encontrar la respuesta para la vida, el universo y todo. Después de mucho esfuerzo entendieron que lo importante no era la respuesta -42- sino la pregunta. Y tocó crear otro computador más poderoso para encontrar cuál es la pregunta.\n\n¿Cuál es esa pregunta que me inspira? \n¿Cuál es esa pregunta que me mueve?\n¿Cuál es esa pregunta que me motiva? \n¿Cuál es esa pregunta que nos deberíamos estar haciendo?\n\nCada uno tiene por lo menos una.\n\nLo importante no es la respuesta, es la pregunta."}, {"id": "T54", "t": "¿Qué es eso que solo harías tú?", "x": "La única forma de responder a esta pregunta es haciendo muchas cosas. Es ensayando, es moviéndonos, es haciendo.\n\nPreguntas que nos ayudan a encontrar un propósito son:\n\n¿Por qué nos van a pagar?\n¿Qué necesita el mundo?\n¿Para qué soy bueno?\n¿Qué nos gusta hacer?\n\nUna pregunta para añadir a esta lista es: ¿Qué es eso que solo harías tú?\n\nNos ayuda a definirnos, a ser únicos y creativos."}, {"id": "T55", "t": "¿Es esto divertido?", "x": "En vez de preguntarte si es fácil o difícil, pregúntate si es divertido o no es divertido. \nNo dejes de hacer cosas porque son difíciles, deja de hacer cosas porque no son divertidas."}, {"id": "T56", "t": "Una cita con la curiosidad", "x": "Muchas veces no encontramos tiempo para satisfacer la curiosidad. ¿Qué tal si nos ponemos cita con la curiosidad? De esta manera podemos posponer cosas menos importantes porque tenemos una cita.\n\nEs fácil: la próxima vez que algo te cause curiosidad ponte una cita. Abre tu calendario y agenda una cita con la curiosidad, escribe ahí sobre que tema van a jugar.\n\nOjalá pudieras jugar con la curiosidad por lo menos una vez al día. Para arrancar puede ser una vez a la semana.\n\nDurante estos minutos u horas puedes preguntar a alguien experto en el tema, buscar un board relacionado en Pinterest, unirte a una comunidad sobre el tema en Reddit, leer el artículo de la Wikipedia o ¡construir algo!"}, {"id": "T57", "t": "Aprender", "x": "Lo que aprendas es más importante que cómo lo aprendes.\n\nNo importa mucho cómo aprendo si el resultado es que aprendí. Es más importante enfocarse en el qué. \n\n¿Qué es eso que tengo que aprender? ¿Qué es eso que es importante aprender? ¿Qué es eso que al aprender me simplifica el resto? ¿Cuál es el mínimo que tengo que aprender para sacar un gran provecho?\n\nHacer preguntas es bueno, hacer buenas preguntas es mejor. Tenemos que aprender a hacer buenas preguntas y eso se aprende haciendo preguntas."}, {"id": "T58", "t": "Movimiento", "x": "Para que haya movimiento se necesitan dos.\n¿Las estrellas se mueven o nos movemos nosotros?\nEs cuestión de perspectiva.\nMe muevo a la velocidad que tú te mueves.\nSi mi vecino va rápido, yo también.\nPodemos escoger vecinos y por tanto velocidad.\n\n¿A qué velocidad te quieres mover?\n¿Dónde quieres estar?\n\nOjo: No siempre más rápido es mejor."}, {"id": "T59", "t": "Pasión y curiosidad", "x": "Nos dicen que tenemos que potenciar nuestra pasión. \nQue debemos seguir nuestra pasión. \n\nEso es muy difícil. ¿Cuál es mi pasión?\nY si esa es mi pasión, ¿cómo hago para seguirla? \n¿Por dónde arranco?\n\nLa curiosidad es más fácil de seguir. Cada uno de nosotros tiene curiosidad. Hay que aprender a escucharla, y jugar con ella. Es muy fácil encontrarle un espacio, un tiempo y unos recursos para jugar con mi curiosidad.\n\nJugar con mi curiosidad me va a dar indicios de dónde está mi pasión. O tal vez cree una nueva pasión."}, {"id": "T60", "t": "Encontrando reinas", "x": "Un gran mito es que en la colmena solo hay una reina.\nSiempre nos lo han dicho.\nY como todo el mundo lo dice, lo creemos.\nLo damos por hecho.\nSolo vemos una reina, porque cuando la encontramos paramos de buscar.\n\nEn una colmena hay varias reinas.\nSi nos sacamos de la cabeza que solo hay una, vamos a encontrar otra.\n\nEn la vida nos pasa lo mismo. Si creemos que solo hay una manera de hacer las cosas, que solo hay una solución, que solo existe uno, no vemos el resto.\n\nNo des nada por hecho. El que busca encuentra."}, {"id": "T61", "t": "Error", "x": "El error es posibilidad.\nEs una gran fuerza que genera diversidad, creadora de inteligencia.\nInventa problemas y de ahí salen soluciones.\nEs libertad.\nHace que el mundo sea incierto, y por eso interesante, diferente.\nDinámico.\n\nEl error es lo que nos hace aprender.\nEs para lo que aprendemos.\n\nLa posibilidad de error nos motiva a hacer las cosas bien.\n\n¡Cometamos errores!\n¡Celebremos errores!"}, {"id": "T62", "t": "Aprender a preguntar", "x": "Hay que aprender a preguntar.\nHay que aprender a pedir favores.\nHay que aprender a pedir ayuda.\nSi no preguntamos nos podemos estancar.\nNunca sabremos la respuesta.\nSi no preguntamos tal vez no encontremos esa respuesta o ese apoyo que necesitamos.\n\nPreguntar es tocar a una puerta.\nLas personas casi siempre abren la puerta, y casi siempre te dejan entrar.\n\nNo te dé pena preguntar.\nNo te dé pena tocar una puerta.\nEs natural de los humanos recibir visitas y atenderlos bien."}, {"id": "T63", "t": "Hacer preguntas", "x": "“Computers are useless. They only give you answers” \n\nObtener respuestas es cada día más barato. Hacer preguntas gana valor.\nCada día hacemos más preguntas y para todas obtenemos respuestas, generalmente buenas. Internet responde rápido y bien, casi, cualquier pregunta.\nEn esta abundancia de respuestas ellas empiezan a perder sentido. Importa es lo que preguntamos.\n\nLas tecnologías que se enfocan en encontrar respuestas tienden a la omnipresencia. Son instantáneas, confiables e invisibles. Mientras que las tecnologías que se enfocan en ayudarnos a hacer preguntas cada día valen más.\n\nHacer preguntas es más poderoso que responderlas."}, {"id": "T64", "t": "Ignorancia aumenta exponencialmente", "x": "Hoy desconocemos el 96% o más de la materia y energía del universo. La llamamos materia “oscura”. Si miramos con un microscopio hacia adentro tampoco sabemos mucho de que hay dentro de una célula o el cerebro.\n\nResulta que la cantidad de respuestas y tecnologías para encontrarlas aumenta exponencialmente.\n\nUna gran paradoja en la ciencia es que por cada respuesta generamos dos o más preguntas nuevas.\n\nLo bonito es que si la cantidad de preguntas aumenta exponencialmente más rápido, ¡la ignorancia aumenta exponencialmente!"}, {"id": "T65", "t": "Mis preguntas", "x": "La calidad de mi vida depende de la calidad de mis preguntas. \nYo debo cuestionar todo el tiempo. \nY debo hacer buenas preguntas.\n¿Qué es una buena pregunta? \nTal vez aquella que genera nuevas preguntas.\n\nEntre mejores sean mis preguntas, mejor será mi calidad de vida."}, {"id": "T66", "t": "Buenas preguntas", "x": "Una buena pregunta: \nNo necesita una respuesta correcta, no puede ser contestada inmediatamente, cuestiona las respuestas existentes.\nEs la que usted necesita responder una vez que la oye, más no te preocupaba antes de ella.\nCrea un nuevo territorio de pensamiento. \nEs la semilla de la innovación en ciencia, tecnología, arte, política y negocios. \nEstá en el borde de lo que se conoce y lo que no se conoce, ni tonto ni obvio.\nEs el signo de una mente (des) educada. \nEs aquella que genera muchas otras buenas preguntas.\nUna buena pregunta puede ser el último trabajo que una máquina aprenderá a hacer.\nUna buena pregunta es para lo que son los humanos."}, {"id": "T67", "t": "La persona de enfrente", "x": "Estar muy o poco expectante acerca de una situación puede hacer que la desperdiciemos. \nSi la persona que tengo enfrente es muy famosa, exitosa, una estrella de rock, es muy probable que yo me paralice y desperdicie la oportunidad. \n\nLa situación contraria también es probable. Muchas personas nos pasan por el frente y no sabemos quiénes son. Seguro tienen grandes historias y aprendizajes que compartir, las dejamos pasar, no aprovechamos la oportunidad.\n\nEn el primer caso estamos pensando en que no debemos desaprovechar la oportunidad, y por pensar en lo que puede pasar, no actuamos. En el segundo caso no estamos pensando que es una oportunidad y por eso no la vemos.\nHay que ver todo como una oportunidad sin generar grandes expectativas al respecto. Más bien actuar con curiosidad y con el fin de descubrir... ¿qué tengo al frente?"}, {"id": "T68", "t": "Aprender cagándola", "x": "La educación tradicional está diseñada para que no cometamos errores. Encontramos manuales, tutoriales y ejemplos de cómo se hacen las cosas. \nY si hacemos algo mal nos castigan. Así aprendemos a seguir instrucciones y a no salirnos de la margen. \n\nEn la vida el error es más frecuente que el éxito. Por eso tenemos que fomentar el error en la educación. Prepararnos para el error, no para el éxito.\n\nNecesitamos personas que piensen diferente. Que no tengan miedo a cometer errores, que aprendan de ellos. Que vean oportunidades con cada cagada. Cada cagada me enseña a hacerlo mejor en el futuro.\n\nFomentemos la cagada."}, {"id": "T69", "t": "Embarrarla", "x": "De vez en cuando uno la embarra. Así aprendemos. Hay que hacerlo frecuente \ny rápido, para reconocer y corregir en la marcha, entender el sistema, y no repetir el error.\n\n¿Cómo sé si debo seguir adelante con mi proyecto? Antes de preguntar ¿qué tanto corregir?, ¿valdrá la pena abandonar la idea?, o ¿vuelvo a empezar?, debo evaluar para dónde voy.\n\nNo hay un volver a empezar. El tiempo no se puede devolver. Y los caminos recorridos no se van a deshacer.\n\nSiempre habrá una infinidad de metas \ny de caminos para llegar a ellas. Hay que tener clara mi meta y después decidir el siguiente paso que me mueve hacia ella."}]/*__END__*/;
+
+/* =========================================================
+   LANZADOR DE CARTA (mecánica del app: portada → ilustración → texto)
+   ========================================================= */
+const stage = document.getElementById('stage');
+const flip  = document.getElementById('flip');
+const cover = document.getElementById('cover');
+const img   = document.getElementById('cardImg');
+const titleEl = document.getElementById('cardTitle');
+const textEl  = document.getElementById('cardText');
+const hint  = document.getElementById('hint');
+const drawBtn = document.getElementById('drawBtn');
+
+let ultimaId = null;
+let yaSaco = false;
+
+function sacarCarta(){
+  if (!CARTAS.length) return;
+  // random sin repetir la anterior
+  let carta;
+  do { carta = CARTAS[Math.floor(Math.random() * CARTAS.length)]; }
+  while (CARTAS.length > 1 && carta.id === ultimaId);
+  ultimaId = carta.id;
+
+  // reset a "leyendo ilustración"
+  flip.classList.remove('flipped');
+  img.classList.remove('ready');
+  titleEl.textContent = carta.t || 'Tecnología';
+  textEl.textContent  = carta.x || '';
+
+  // precarga imagen
+  const url = CONFIG.imgBase + carta.id + '.png';
+  const pre = new Image();
+  pre.onload = () => { img.src = url; requestAnimationFrame(()=> img.classList.add('ready')); };
+  pre.onerror = () => { img.alt = 'Carta ' + carta.id; img.classList.add('ready'); };
+  pre.src = url;
+
+  // destapar
+  stage.classList.add('drawn');
+  drawBtn.textContent = 'Saca otra';
+
+  hint.innerHTML = 'Toc&aacute; la carta para leerla.';
+  hint.classList.add('show');
+
+  if (!yaSaco){ yaSaco = true; mostrarSticky(); }
+}
+
+// tocar la carta: alterna ilustración ↔ texto (una vez destapada)
+flip.addEventListener('click', () => {
+  if (!stage.classList.contains('drawn')) return;
+  flip.classList.toggle('flipped');
+  if (flip.classList.contains('flipped')){
+    hint.innerHTML = 'Esta es 1 de 69. El naipe completo &rarr; <a href="#reservar">resérvalo</a>.';
+  } else {
+    hint.innerHTML = 'Toc&aacute; la carta para leerla.';
+  }
+});
+
+drawBtn.addEventListener('click', sacarCarta);
+cover.addEventListener('click', sacarCarta);
+cover.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sacarCarta(); } });
+
+/* =========================================================
+   STICKY RESERVE (aparece al sacar la primera carta)
+   ========================================================= */
+let stickyShown = false, stickyDismissed = false;
+function mostrarSticky(){
+  if (stickyShown || stickyDismissed) return;
+  stickyShown = true;
+  const s = document.getElementById('stickyReserve');
+  setTimeout(()=> s.classList.add('show'), 300);
+}
+document.getElementById('stickyClose').addEventListener('click', () => {
+  stickyDismissed = true;
+  document.getElementById('stickyReserve').classList.remove('show');
+});
+// también aparece al bajar más allá del hero, aunque no saquen carta
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 640) mostrarSticky();
+}, { passive: true });
+
+/* =========================================================
+   STOCK — usa el número manual de CONFIG (o CONFIG.stockUrl si lo definiste)
+   ========================================================= */
+async function cargarStock(){
+  let restantes = CONFIG.stockRestantes;
+  let total = CONFIG.stockTotal;
+  let fecha = CONFIG.stockDate;
+  // Solo intenta un contador automático si definiste CONFIG.stockUrl.
+  if (CONFIG.stockUrl){
+    try {
+      const r = await fetch(CONFIG.stockUrl, { cache: 'no-store' });
+      if (r.ok){
+        const d = await r.json();
+        if (typeof d.restantes === 'number') restantes = d.restantes;
+        if (typeof d.total === 'number') total = d.total;
+        if (d.actualizado) fecha = d.actualizado;
+      }
+    } catch(e){ /* si falla, usa el número manual */ }
+  }
+
+  document.getElementById('restantes').textContent = restantes;
+  document.getElementById('total').textContent = total;
+  document.getElementById('stock-updated').textContent = `actualizado ${fecha}`;
+  const pct = Math.max(0, Math.min(100, Math.round(((total - restantes) / total) * 100)));
+  requestAnimationFrame(()=> { document.getElementById('stockFill').style.width = pct + '%'; });
+}
+cargarStock();
+
+/* =========================================================
+   GALERÍA — fotos + video desde CONFIG
+   ========================================================= */
+(function(){
+  const strip = document.getElementById('galleryStrip');
+  if (CONFIG.fotos && CONFIG.fotos.length){
+    strip.innerHTML = CONFIG.fotos.map(u =>
+      `<div class="shot"><img src="${u}" alt="Foto del naipe Tecnología" loading="lazy"></div>`
+    ).join('');
+  } else {
+    strip.innerHTML = [1,2,3].map(()=>`<div class="shot"><div class="ph">[ foto del<br>naipe acá ]</div></div>`).join('');
+  }
+  const slot = document.getElementById('videoSlot');
+  if (CONFIG.video){
+    if (/\.mp4($|\?)/i.test(CONFIG.video)){
+      slot.innerHTML = `<video src="${CONFIG.video}" controls playsinline preload="metadata"></video>`;
+    } else {
+      slot.innerHTML = `<iframe src="${CONFIG.video}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
     }
-  </script>
+  }
+})();
 
+/* =========================================================
+   TESTIMONIOS
+   ========================================================= */
+(function(){
+  const t = CONFIG.testimonios || [];
+  if (t.length){
+    document.getElementById('testimonios').style.display = 'block';
+    document.getElementById('testimonios-list').innerHTML = t.map(x =>
+      `<div class="quote"><p>${x.texto}</p><div class="by">&mdash; ${x.autor}</div></div>`
+    ).join('');
+  }
+})();
+</script>
 </body>
 </html>
