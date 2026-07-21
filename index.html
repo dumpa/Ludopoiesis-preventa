@@ -317,10 +317,16 @@
 
   /* testimonios */
   #testimonios { display: none; }
-  .quote { padding:18px 0; border-bottom:1px solid var(--hairline); }
-  .quote:last-child { border-bottom: none; }
+  .quote { padding:0; }
   .quote p { font-family:'Fraunces',serif; font-weight:300; font-style:italic; font-size:17px; line-height:1.5; color:var(--ink); }
-  .quote .by { font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-mute); margin-top:8px; letter-spacing:.3px; }
+  .quote .by { font-family:'DM Sans',sans-serif; font-size:12px; color:var(--ink-mute); margin-top:10px; letter-spacing:.3px; }
+  .testi-viewport { position:relative; }
+  .testi-viewport .quote { transition: opacity .35s ease; }
+  .testi.fading .testi-viewport .quote { opacity: 0; }
+  .testi-controls { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:20px; padding-top:16px; border-top:1px solid var(--hairline); }
+  .testi-nav { background:none; border:1px solid var(--hairline); color:var(--ink); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:18px; line-height:1; display:grid; place-items:center; transition:border-color .2s ease, color .2s ease; }
+  .testi-nav:hover { border-color:var(--accent); color:var(--primary); }
+  .testi-count { font-family:'DM Sans',sans-serif; font-size:12px; letter-spacing:1px; color:var(--ink-mute); min-width:52px; text-align:center; }
 
   /* author */
   .author-text { font-family:'Fraunces',serif; font-weight:300; font-size:16px; line-height:1.6; color:var(--ink); }
@@ -581,7 +587,14 @@
   <section id="testimonios">
     <div class="wrap">
       <span class="eyebrow">Lo que dicen</span>
-      <div id="testimonios-list"></div>
+      <div class="testi" id="testi">
+        <div class="testi-viewport" id="testiViewport" aria-live="polite"></div>
+        <div class="testi-controls" id="testiControls">
+          <button class="testi-nav" id="testiPrev" aria-label="Testimonio anterior">&lsaquo;</button>
+          <span class="testi-count" id="testiCount"></span>
+          <button class="testi-nav" id="testiNext" aria-label="Testimonio siguiente">&rsaquo;</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -662,10 +675,13 @@ const CONFIG = {
   // Video (opcional): pega una URL .mp4 o un embed de YouTube/Vimeo.
   video: "",   // ej: "https://www.youtube.com/embed/XXXX" o "https://.../video.mp4"
 
+  // Testimonios: se cargan primero desde este archivo JSON externo (edítalo sin tocar el index).
+  // Si el archivo falla o no existe, se usan los de abajo como respaldo. Nunca rompe la página.
+  testimoniosUrl: "testimonios.json",
   testimonios: [
-     { texto: "Es una gran herramienta para conversar en otros niveles energéticos.", autor: "Juan Pablo Calderón, Bogotá" },
-    {texto: "Bueno, Yo los naipes de Dumpa los tengo siempre cerca, me sirven mucho para inspirarme, para tener breaks creativos, además es una nota que sean analógicos, entonces ese break es por fuera de pantallas. Y tengo varias carticas que tengo ahí como mantra, una de ellas es esta: Qué hago, si me preguntan qué hago, no sé, me pongo a inventar, y al inventar invento, se crea un nuevo mundo, nace algo y es real. Super poderoso, me conecta un montón, y también me inspiró mucho este trabajo de Dumpa para crear mi propio libro. Entonces pues darse cuenta que se puede crear, que se puede hacer es algo que siempre me ha inspirado el querido Dumpa.  ",autor: "Jole Restrepo, Hypercubus" },
- {texto: "Me encanta Ludopoiesis.  Siempre lo consulto de manera individual. A veces simplemente saco una carta sin un motivo especial ,  sin pregunta,  para encontrarme con una idea inspiradora. Otras veces saco una carta para buscar una respuesta y me ayuda a entender la situación.",  autor: "Liliana Arango" },
+    { texto: "Es una gran herramienta para conversar en otros niveles energéticos.", autor: "Juan Pablo Calderón, Bogotá" },
+    { texto: "Los naipes de Dumpa los tengo siempre cerca, me sirven para inspirarme, para tener breaks creativos por fuera de pantallas. Tengo varias como mantra. Me conecta un montón, y me inspiró para crear mi propio libro.", autor: "Jole Restrepo, Hypercubus" },
+    { texto: "Me encanta Ludopoiesis. A veces saco una carta sin pregunta, para encontrarme con una idea inspiradora. Otras veces la saco buscando respuesta y me ayuda a entender la situación.", autor: "Liliana Arango" }
   ]
 };
 
@@ -826,14 +842,63 @@ cargarStock();
 /* =========================================================
    TESTIMONIOS
    ========================================================= */
-(function(){
-  const t = CONFIG.testimonios || [];
-  if (t.length){
-    document.getElementById('testimonios').style.display = 'block';
-    document.getElementById('testimonios-list').innerHTML = t.map(x =>
-      `<div class="quote"><p>${x.texto}</p><div class="by">&mdash; ${x.autor}</div></div>`
-    ).join('');
+(async function(){
+  const section = document.getElementById('testimonios');
+  const viewport = document.getElementById('testiViewport');
+  const box = document.getElementById('testi');
+  const prevBtn = document.getElementById('testiPrev');
+  const nextBtn = document.getElementById('testiNext');
+  const countEl = document.getElementById('testiCount');
+  const controls = document.getElementById('testiControls');
+
+  // 1) Cargar desde JSON externo (editable sin tocar el index). Si falla, usar CONFIG.testimonios.
+  let lista = [];
+  if (CONFIG.testimoniosUrl){
+    try {
+      const r = await fetch(CONFIG.testimoniosUrl, { cache: 'no-store' });
+      if (r.ok){
+        const data = await r.json();
+        if (Array.isArray(data)) lista = data;
+      }
+    } catch(e){ /* silencio: caemos al respaldo inline */ }
   }
+  if (!lista.length) lista = CONFIG.testimonios || [];
+  lista = lista.filter(x => x && x.texto);
+  if (!lista.length) return;   // sin testimonios: la sección queda oculta
+
+  section.style.display = 'block';
+
+  let i = 0;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function render(idx){
+    const x = lista[idx];
+    viewport.innerHTML = `<div class="quote"><p>${x.texto}</p><div class="by">&mdash; ${x.autor || ''}</div></div>`;
+    countEl.textContent = `${idx+1} / ${lista.length}`;
+  }
+  function go(n){
+    const next = (n + lista.length) % lista.length;
+    if (reduce){ i = next; render(i); return; }
+    box.classList.add('fading');
+    setTimeout(()=>{ i = next; render(i); box.classList.remove('fading'); }, 320);
+  }
+
+  render(0);
+
+  // Una sola cita: sin controles ni autoplay.
+  if (lista.length < 2){ controls.style.display = 'none'; return; }
+
+  prevBtn.addEventListener('click', ()=>{ go(i-1); restart(); });
+  nextBtn.addEventListener('click', ()=>{ go(i+1); restart(); });
+
+  let timer = null;
+  function start(){ if (reduce) return; timer = setInterval(()=> go(i+1), 7000); }
+  function stop(){ if (timer){ clearInterval(timer); timer = null; } }
+  function restart(){ stop(); start(); }
+
+  box.addEventListener('mouseenter', stop);
+  box.addEventListener('mouseleave', start);
+  start();
 })();
 </script>
 </body>
