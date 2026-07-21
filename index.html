@@ -591,6 +591,7 @@
         <div class="testi-viewport" id="testiViewport" aria-live="polite"></div>
         <div class="testi-controls" id="testiControls">
           <button class="testi-nav" id="testiPrev" aria-label="Testimonio anterior">&lsaquo;</button>
+          <button class="testi-nav" id="testiPause" aria-label="Pausar rotación">&#10073;&#10073;</button>
           <span class="testi-count" id="testiCount"></span>
           <button class="testi-nav" id="testiNext" aria-label="Testimonio siguiente">&rsaquo;</button>
         </div>
@@ -868,7 +869,8 @@ cargarStock();
 
   section.style.display = 'block';
 
-  let i = 0;
+  const pauseBtn = document.getElementById('testiPause');
+  let i = 0, paused = false, timer = null;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function render(idx){
@@ -876,11 +878,24 @@ cargarStock();
     viewport.innerHTML = `<div class="quote"><p>${x.texto}</p><div class="by">&mdash; ${x.autor || ''}</div></div>`;
     countEl.textContent = `${idx+1} / ${lista.length}`;
   }
+
+  // Tiempo en pantalla proporcional al largo: cortos ~9s, largos hasta ~18s.
+  function dwellFor(idx){
+    const len = (lista[idx].texto || '').length;
+    return Math.min(18000, Math.max(9000, 3500 + len * 26));
+  }
+  function stop(){ if (timer){ clearTimeout(timer); timer = null; } }
+  function schedule(){
+    stop();
+    if (reduce || paused || lista.length < 2) return;
+    timer = setTimeout(()=> go(i + 1), dwellFor(i));
+  }
   function go(n){
     const next = (n + lista.length) % lista.length;
-    if (reduce){ i = next; render(i); return; }
+    const commit = ()=>{ i = next; render(i); schedule(); };
+    if (reduce){ commit(); return; }
     box.classList.add('fading');
-    setTimeout(()=>{ i = next; render(i); box.classList.remove('fading'); }, 320);
+    setTimeout(()=>{ box.classList.remove('fading'); commit(); }, 320);
   }
 
   render(0);
@@ -888,17 +903,22 @@ cargarStock();
   // Una sola cita: sin controles ni autoplay.
   if (lista.length < 2){ controls.style.display = 'none'; return; }
 
-  prevBtn.addEventListener('click', ()=>{ go(i-1); restart(); });
-  nextBtn.addEventListener('click', ()=>{ go(i+1); restart(); });
+  prevBtn.addEventListener('click', ()=> go(i - 1));
+  nextBtn.addEventListener('click', ()=> go(i + 1));
 
-  let timer = null;
-  function start(){ if (reduce) return; timer = setInterval(()=> go(i+1), 7000); }
-  function stop(){ if (timer){ clearInterval(timer); timer = null; } }
-  function restart(){ stop(); start(); }
+  function setPaused(p){
+    paused = p;
+    pauseBtn.innerHTML = p ? '&#9654;' : '&#10073;&#10073;';   // ▶ : ❚❚
+    pauseBtn.setAttribute('aria-label', p ? 'Reanudar rotación' : 'Pausar rotación');
+    schedule();
+  }
+  pauseBtn.addEventListener('click', ()=> setPaused(!paused));
 
+  // Pausa al pasar el mouse (desktop); en móvil manda el botón de pausa.
   box.addEventListener('mouseenter', stop);
-  box.addEventListener('mouseleave', start);
-  start();
+  box.addEventListener('mouseleave', ()=> { if (!paused) schedule(); });
+
+  schedule();
 })();
 </script>
 </body>
