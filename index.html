@@ -474,12 +474,9 @@
       <div class="gallery-strip" id="galleryStrip">
         <!-- Se llena solo desde CONFIG.fotos. Placeholders si está vacío. -->
       </div>
-<!--      <div class="video-slot" id="videoSlot">
-        <div class="ph"></div>
-      </div> -->
+      <div class="video-slot" id="videoSlot" style="display:none"></div>
       <div class="gallery-note">Desliz&aacute; para ver m&aacute;s.</div>
-    </div> 
-  
+    </div>
   </section>
 
   <!-- ===================== PROBÁ UNA CARTA (lanzador del app) ===================== -->
@@ -688,7 +685,7 @@ const CONFIG = {
     "img/foto12.jpeg",
   ],
   // Video (opcional): pega una URL .mp4 o un embed de YouTube/Vimeo.
- // video: "",   // ej: "https://www.youtube.com/embed/XXXX" o "https://.../video.mp4"
+  video: "",   // ej: "https://www.youtube.com/embed/XXXX" o "https://.../video.mp4"
 
   testimonios: [
     // { texto: "Lo saco cada mañana antes del café.", autor: "Nombre, ciudad" },
@@ -840,6 +837,7 @@ cargarStock();
   }
   const slot = document.getElementById('videoSlot');
   if (CONFIG.video){
+    slot.style.display = '';
     if (/\.mp4($|\?)/i.test(CONFIG.video)){
       slot.innerHTML = `<video src="${CONFIG.video}" controls playsinline preload="metadata"></video>`;
     } else {
