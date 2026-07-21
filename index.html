@@ -356,30 +356,13 @@
     .flip { transition: none !important; }
   }
 
-  /* ================= HERO: mazo estático + acciones ================= */
+  /* ================= HERO: portada del naipe + acciones ================= */
   .hero .eyebrow { display:block; margin-bottom:14px; }
-  .herodeck {
-    position: relative; width: 152px; height: 226px; margin: 8px auto 30px;
-  }
-  .herodeck__c {
-    position:absolute; inset:0; border-radius:10px; background:#fff;
-    border:1px solid var(--hairline); border-top:3px solid var(--accent);
+  .hero-cover {
+    display:block; width:172px; max-width:62%; height:auto;
+    margin:8px auto 30px; border-radius:10px;
     box-shadow:0 1px 2px rgba(0,0,0,.05), 0 22px 50px -20px color-mix(in srgb, var(--accent) 30%, transparent);
   }
-  .herodeck__c--b { transform:translate(11px,13px) rotate(2.6deg); opacity:.5; }
-  .herodeck__c--a { transform:translate(-8px,7px) rotate(-2deg);  opacity:.72; }
-  .herodeck__c--f { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
-  .hl-lens {
-    width:54px; height:54px; border-radius:50%; display:grid; place-items:center; font-size:21px;
-    border:1px solid var(--hairline);
-    background:
-      radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 62%),
-      repeating-linear-gradient(0deg, var(--hairline) 0 1px, transparent 1px 9px),
-      repeating-linear-gradient(90deg, var(--hairline) 0 1px, transparent 1px 9px);
-  }
-  .hl-wm  { font-family:'Fraunces',serif; font-weight:300; font-size:13px; color:var(--ink); letter-spacing:-.2px; }
-  .hl-wm b{ font-weight:500; color:var(--accent); }
-  .hl-tag { font-family:'DM Sans',sans-serif; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-mute); }
 
   .hero-actions { display:flex; flex-direction:column; align-items:center; gap:16px; }
   .hero-cta {
@@ -446,17 +429,9 @@
     <div class="wrap">
       <span class="eyebrow">Preventa &middot; Primera edici&oacute;n de 500</span>
       <h1>Un or&aacute;culo de papel para jugar la vida.</h1>
-      <p class="sub">El tercer naipe de Ludopoiesis. 69 cartas ilustradas, un texto en cada una. Se imprime, llega a tu casa, se toca con las manos.</p>
+      <p class="sub">El tercer naipe de Ludopoiesis. 69 cartas ilustradas, un texto en cada una. Se imprime, llega a tu casa, se baraja con las manos.</p>
 
-      <div class="herodeck" aria-hidden="true">
-        <span class="herodeck__c herodeck__c--b"></span>
-        <span class="herodeck__c herodeck__c--a"></span>
-        <span class="herodeck__c herodeck__c--f">
-          <span class="hl-lens">&#129504;</span>
-          <span class="hl-wm">ludo<b>poiesis</b></span>
-          <span class="hl-tag">Tecnolog&iacute;a &middot; 69 cartas</span>
-        </span>
-      </div>
+      <img class="hero-cover" src="img/Tecnologia.jpg" alt="Portada del naipe Tecnolog&iacute;a de Ludopoiesis">
 
       <div class="hero-actions">
         <a class="hero-cta" id="waHero" href="#" target="_blank" rel="noopener">Reservar por WhatsApp</a>
